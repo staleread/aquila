@@ -1,0 +1,6 @@
+repos:
+-   repo: https://github.com/FlamingTempura/bibtex-tidy
+    rev: v1.14.0
+    hooks:
+    -   id: bibtex-tidy
+        args: ['--curly']
