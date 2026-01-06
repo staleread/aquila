@@ -14,10 +14,10 @@ func substituteForward(l *Mat, b *Vec) {
 		var numerator uint8 = b.Data[i]
 
 		for j := range n - 1 {
-			numerator = Sub(numerator, Mul(l.Data[n*i + j], b.Data[j]))
+			numerator = Sub(numerator, Mul(l.Data[n*i+j], b.Data[j]))
 		}
 
-		b.Data[i] = Div(numerator, l.Data[n*i + i])
+		b.Data[i] = Div(numerator, l.Data[n*i+i])
 	}
 }
 
@@ -29,9 +29,9 @@ func substituteBackward(u *Mat, b *Vec) {
 		var numerator uint8 = b.Data[i]
 
 		for j := i + 1; j < n; j++ {
-			numerator = Sub(numerator, Mul(u.Data[n*i + j], b.Data[j]))
+			numerator = Sub(numerator, Mul(u.Data[n*i+j], b.Data[j]))
 		}
 
-		b.Data[i] = Div(numerator, u.Data[n*i + i])
+		b.Data[i] = Div(numerator, u.Data[n*i+i])
 	}
 }

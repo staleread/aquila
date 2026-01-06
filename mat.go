@@ -2,13 +2,13 @@
 package main
 
 import (
+	"crypto/rand"
 	"strconv"
 	"strings"
-	"crypto/rand"
 )
 
 type Mat struct {
-	Dim int
+	Dim  int
 	Data []uint8
 }
 
