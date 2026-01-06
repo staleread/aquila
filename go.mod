@@ -1,3 +1,3 @@
-module github.com/staleread/akifa
+module github.com/staleread/aquila
 
 go 1.25.5
