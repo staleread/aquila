@@ -1,3 +1,3 @@
-# akifa
+# aquila 🦅
 
 Cellular automata public key cryptosystem
