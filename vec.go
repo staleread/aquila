@@ -1,25 +1,19 @@
-// Utilities for matrices over GF(2)
 package main
 
 import (
-	"strconv"
+	"fmt"
 	"strings"
 )
 
-type Vec struct {
-	Size int
-	Data []uint8
-}
+type BitVec []BitPack
 
-func (vec *Vec) String() string {
-	n := vec.Size
+func (vec BitVec) String() string {
+	n := len(vec)
 	sb := strings.Builder{}
 
 	for i := range n {
-		val := int(vec.Data[i])
-
-		sb.WriteString(strconv.Itoa(val))
-		sb.WriteRune('\n')
+		val := vec[i] & 1
+		sb.WriteString(fmt.Sprintf("%d\n", val))
 	}
 	return sb.String()
 }
