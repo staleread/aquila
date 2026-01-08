@@ -2,17 +2,13 @@ package main
 
 import "fmt"
 
-type BitPack uint32
-
-const BytesPerPack = 32 / 8
-
 func main() {
-	lu := RandLuPack(16)
-	fmt.Println(lu)
+	sle := RandSLE(4)
+	fmt.Println(sle.mat)
 
-	b := BitVec{0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1}
+	b := Vec{123, 17, 56, 255}
 	fmt.Println(b)
 
-	SolveLu(lu, b, b)
+	sle.Solve(b, b)
 	fmt.Println(b)
 }

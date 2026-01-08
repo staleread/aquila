@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-type BitVec []BitPack
+type Vec []Elem
 
-func (vec BitVec) String() string {
+func (vec Vec) String() string {
 	n := len(vec)
 	sb := strings.Builder{}
 
 	for i := range n {
-		val := vec[i] & 1
-		sb.WriteString(fmt.Sprintf("%d\n", val))
+		val := vec[i]
+		sb.WriteString(fmt.Sprintf("%0*b\n", ElemBytes*8, val))
 	}
 	return sb.String()
 }
