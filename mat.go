@@ -27,7 +27,7 @@ func RandMat(n Dim) *Mat {
 }
 
 // Performs forward substitution on a lower triangular matrix. Diagonal elements of must be non-zero.
-// Writes the result to x. It's safe for x and b to point to the same array slice.
+// Writes the result to x. It's safe for x and b to point to the same vector.
 func (mat *Mat) SubForward(x, b Vec) {
 	n := len(b)
 	for i := range n {
@@ -41,7 +41,7 @@ func (mat *Mat) SubForward(x, b Vec) {
 }
 
 // Performs backward substitution on a upper triangular matrix. Diagonal elements of must be non-zero.
-// Writes the result to x. It's safe for x and b to point to the same array slice.
+// Writes the result to x. It's safe for x and b to point to the same vector.
 func (mat *Mat) SubBackward(x, b Vec) {
 	n := len(b)
 	for i := n - 1; i >= 0; i-- {

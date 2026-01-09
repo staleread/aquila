@@ -17,6 +17,7 @@ func RandSLE(n Dim) *SLE {
 }
 
 // Solves SLE using LU decomposition.
+// Writes the result to x. It's safe for x and b to point to the same vector.
 func (sle *SLE) Solve(x, b Vec) {
 	sle.lu.SubForward(x, b)
 	sle.lu.SubBackward(x, x)
