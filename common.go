@@ -8,3 +8,4 @@ const (
 )
 
 type Elem = uint16
+type Dim = int32

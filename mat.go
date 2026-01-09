@@ -5,18 +5,24 @@ import (
 	"strings"
 )
 
-type Dim = int32
-
 type Mat struct {
 	Dim  Dim
-	Data []Elem
+	Data Vec
 }
 
 // Creates a matrix with all elements set to zero.
-func Zeros(n Dim) *Mat {
+func ZeroMat(n Dim) *Mat {
 	return &Mat{
 		Dim:  n,
-		Data: make([]Elem, n*n),
+		Data: Zeros(n * n),
+	}
+}
+
+// Creates a random matrix
+func RandMat(n Dim) *Mat {
+	return &Mat{
+		Dim:  n,
+		Data: Rands(n * n),
 	}
 }
 
