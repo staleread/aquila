@@ -13,7 +13,7 @@ func (vec Vec) String() string {
 
 	for i := range n {
 		val := vec[i]
-		sb.WriteString(fmt.Sprintf("%0*b\n", ElemBytes*8, val))
+		sb.WriteString(fmt.Sprintf("%0*b\n", ElemLen, val))
 	}
 	return sb.String()
 }

@@ -55,7 +55,7 @@ func (mat *Mat) String() string {
 	for i := range n {
 		for j := range n {
 			val := mat.Data[n*i+j]
-			sb.WriteString(fmt.Sprintf("%0*b ", ElemBytes*8, val))
+			sb.WriteString(fmt.Sprintf("%0*b ", ElemLen, val))
 		}
 		sb.WriteRune('\n')
 	}

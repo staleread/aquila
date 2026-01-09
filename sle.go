@@ -10,28 +10,26 @@ type SLE struct {
 
 // Creates a random SLE
 func RandSLE(n Dim) *SLE {
-	const onesPack = (1 << (ElemBytes * 8)) - 1
-
 	mat := Zeros(n)
 
-	buffSize := n * n * ElemBytes
+	buffSize := n * n * ElemLenBytes
 	buff := make([]byte, buffSize)
 	rand.Read(buff)
 
 	for i := range buffSize {
-		elemIdx := i / ElemBytes
+		elemIdx := i / ElemLenBytes
 
 		// restrict diagonal elements to 1's
 		if elemIdx/n == elemIdx%n {
-			mat.Data[elemIdx] = onesPack
+			mat.Data[elemIdx] = ElemMask
 			continue
 		}
 
-		shift := (i % ElemBytes) * 8
+		shift := (i % ElemLenBytes) * 8
 		mat.Data[elemIdx] |= Elem(buff[i]) << shift
 
 		if shift == 0 {
-			mat.Data[elemIdx] &= onesPack
+			mat.Data[elemIdx] &= ElemMask
 		}
 	}
 
