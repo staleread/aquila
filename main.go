@@ -4,9 +4,9 @@ import "fmt"
 
 func main() {
 	sle := RandSLE(4)
-	fmt.Println(sle.mat)
+	b := Rands(4)
 
-	b := Vec{123, 17, 56, 255}
+	fmt.Println(sle.lu)
 	fmt.Println(b)
 
 	sle.Solve(b, b)
