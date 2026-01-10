@@ -7,10 +7,6 @@ import (
 	"strings"
 )
 
-type Rule interface {
-	Apply(dst Vec)
-}
-
 type fold struct {
 	sle  *SLE
 	snle *SNLE
@@ -39,19 +35,19 @@ func RandDecRule(s, n, deg Size) *DecRule {
 	return &DecRule{perm, folds}
 }
 
-func (rule *DecRule) Apply(dst Vec) {
+func (rule *DecRule) Apply(ct Vec) {
 	s := len(rule.folds)
 	n := len(rule.perm) / s
 
-	dst.Permute(rule.perm)
+	ct.Permute(rule.perm)
 
 	for i, f := range rule.folds {
-		bLin := dst[n*i : n*i+n]
-		f.sle.Solve(bLin, bLin)
+		xPrev := ct[:n*i]
+		xCurr := ct[n*i : n*i+n]
 
-		f.snle.Eval(dst, dst)
+		f.snle.Eval(xPrev, xCurr)
+		f.sle.Solve(xCurr, xCurr)
 	}
-	dst.Permute(rule.perm)
 }
 
 func (rule *DecRule) String() string {
@@ -69,6 +65,7 @@ func (rule *DecRule) String() string {
 			permJ := rule.perm[n*i+j]
 			sb.WriteString(fmt.Sprintf("y%-*d = ", idxPad, permJ+1))
 
+			// Linear part
 			for k := range n {
 				if k > 0 {
 					sb.WriteString(" + ")
@@ -81,6 +78,7 @@ func (rule *DecRule) String() string {
 				sb.WriteString(fmt.Sprintf("%-*s", idxPad+2, varStr))
 			}
 
+			// Non-linear part
 			for _, m := range snle[j] {
 				sb.WriteString(" + ")
 

@@ -54,7 +54,8 @@ func (snle *SNLE) Eval(x, b Vec) {
 			}
 			sum ^= factor
 		}
-		// GF(2) addition in case b is not empty
+		// Use GF(2) addition(=subraction) instead of overriding b in case b is
+		// a non-zero vector.
 		b[i] ^= sum
 	}
 }
