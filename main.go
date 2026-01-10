@@ -5,27 +5,18 @@ import "fmt"
 func main() {
 	const (
 		n      = 4
-		bBytes = 2
-		folds  = bBytes * 8
+		folds  = 3
 		degree = 3
 	)
 
-	b := RandBVec(n, bBytes)
-	fmt.Println(b)
+	decRule := RandDecRule(folds, n, degree)
+	fmt.Println(decRule)
 
-	sle := RandSFoldSLE(n, bBytes)
-	fmt.Println("Linear Part\n", sle)
+	c := Rands(n * folds)
+	fmt.Println("Before")
+	fmt.Println(c)
 
-	xLin := ZeroBVec(n, bBytes)
-	sle.Solve(xLin, b)
-	fmt.Println(xLin)
-
-	snle := RandSFoldSNLE(n, folds, degree)
-	fmt.Println("Non-Linear Part", snle)
-
-	bLin := ZeroBVec(n, bBytes)
-	snle.Eval(xLin, b)
-
-	// sle.Solve(b, b)
-	// fmt.Println(b)
+	decRule.Apply(c)
+	fmt.Println("After")
+	fmt.Println(c)
 }

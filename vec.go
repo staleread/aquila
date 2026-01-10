@@ -1,47 +1,25 @@
 package main
 
-import (
-	"crypto/rand"
-	"fmt"
-	"strings"
-)
+import "crypto/rand"
 
-type BVec struct {
-	bBytes Size
-	data   []Batch
+type Vec []Elem
+
+func Zeros(n Size) Vec {
+	return Vec(make([]Elem, n))
 }
 
-func ZeroBVec(n, bBytes Size) *BVec {
-	return &BVec{bBytes, make([]Batch, n)}
-}
+func Rands(n Size) Vec {
+	vec := Zeros(n)
+	rand.Read(vec)
 
-func RandBVec(n, bBytes Size) *BVec {
-	buffSize := n * bBytes
-	buff := make([]byte, buffSize)
-	rand.Read(buff)
-
-	vec := ZeroBVec(n, bBytes)
-	bMask := BatchMask(bBytes)
-
-	for buffIdx := range buffSize {
-		vecIdx := buffIdx / bBytes
-
-		shift := (buffIdx % bBytes) * 8
-		vec.data[vecIdx] |= Batch(buff[buffIdx]) << shift
-
-		if shift == 0 {
-			vec.data[vecIdx] &= bMask
-		}
+	for i := range n {
+		vec[i] &= 1
 	}
 	return vec
 }
 
-func (vec *BVec) String() string {
-	sb := strings.Builder{}
-
-	for i := range len(vec.data) {
-		val := vec.data[i]
-		sb.WriteString(fmt.Sprintf("%0*b\n", vec.bBytes*8, val))
+func (vec Vec) Permute(perm []VarIdx) {
+	for i, j := range perm {
+		vec[i], vec[j] = vec[j], vec[i]
 	}
-	return sb.String()
 }

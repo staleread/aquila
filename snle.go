@@ -9,63 +9,57 @@ import (
 type monom []VarIdx
 type poly []monom
 
-type SFoldSNLE struct {
-	s    Size
+type SNLE struct {
 	data []poly
 }
 
-func RandSFoldSNLE(n, s, deg Size) *SFoldSNLE {
+func EmptySNLE(n Size) *SNLE {
+	return &SNLE{data: make([]poly, n)}
+}
+
+func RandSNLE(n, deg Size, maxVarIdx VarIdx) *SNLE {
 	idxPerPoly := nSum(deg)
-	pCnt := n * s
 
-	randIds := randVars(idxPerPoly * (pCnt - n)) // No polynomials for the first fold
-	data := make([]poly, pCnt)
+	ids := randVarIds(idxPerPoly * n)
+	data := make([]poly, n)
 
-	for i := n; i < pCnt; i++ {
+	for i := range n {
+		var jSum Size = 0
 		p := poly{}
 
 		for j := range deg {
+			jSum += j
 			m := monom{}
-			maxId := VarIdx(i / n * n) // Restrict the max idx to ones from the previous folds
-			jSum := nSum(j)
 
 			for k := range j + 1 {
-				id := randIds[idxPerPoly*(i-n)+jSum+k] % maxId
-				m = append(m, id)
+				idx := ids[idxPerPoly*i+jSum+k] % maxVarIdx
+				m = append(m, idx)
 			}
 			p = append(p, m)
 		}
 		data[i] = p
 	}
-	return &SFoldSNLE{s, data}
+	return &SNLE{data}
 }
 
-func (snle *SFoldSNLE) Eval(x, b *BVec) {
-	s := snle.s
-	data := snle.data
+func (snle *SNLE) Eval(x, b Vec) {
+	for i, p := range snle.data {
+		var sum Elem = 0
 
-	for i := range Size(len(data)) {
-		bRow := i / s
-		bBit := s - (i % s) - 1
+		for _, m := range p {
+			var factor Elem = 1
 
-		var sum Batch = 0
-
-		for _, m := range data[i] {
-			var factor Batch = 1
-
-			for _, id := range m {
-				xRow := id / s
-				xBit := s - (id % s) - 1
-
-				factor &= x.data[xRow] >> xBit
+			for _, idx := range m {
+				factor &= x[idx]
 			}
 			sum ^= factor
 		}
-		b.data[bRow] |= sum << bBit
+		// GF(2) addition in case b is not empty
+		b[i] ^= sum
 	}
 }
 
-func (snle *SFoldSNLE) String() string {
+func (snle *SNLE) String() string {
 	data := snle.data
 	sb := strings.Builder{}
 
@@ -88,7 +82,7 @@ func (snle *SFoldSNLE) String() string {
 	return sb.String()
 }
 
-func randVars(n Size) []VarIdx {
+func randVarIds(n Size) []VarIdx {
 	buffSize := n * VarIdxBytes
 	buff := make([]byte, buffSize)
 	rand.Read(buff)

@@ -3,7 +3,7 @@ package main
 import "math"
 
 const (
-	VarIdxBytes = 2 // Size of VarIdx type
+	VarIdxBytes = 2
 	MaxVarIdx   = math.MaxUint16
 )
 
@@ -11,9 +11,4 @@ const (
 type Size = uint16
 type VarIdx = Size
 
-// Batch of bits
-type Batch uint32
-
-func BatchMask(bBytes Size) Batch {
-	return math.MaxUint32 >> (32 - bBytes*8)
-}
+type Elem = uint8
