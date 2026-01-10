@@ -1,11 +1,19 @@
 package main
 
+import "math"
+
 const (
-	ElemCap      = 16 // Size of Elem type
-	ElemLen      = 8  // Active bits of element. Must be less than ElemCap
-	ElemMask     = (1 << ElemLen) - 1
-	ElemLenBytes = (ElemLen + 7) / 8
+	VarIdxBytes = 2 // Size of VarIdx type
+	MaxVarIdx   = math.MaxUint16
 )
 
-type Elem = uint16
-type Dim = int32
+// Unsigned integer used to represent an bit size of a batch vector
+type Size = uint16
+type VarIdx = Size
+
+// Batch of bits
+type Batch uint32
+
+func BatchMask(bBytes Size) Batch {
+	return math.MaxUint32 >> (32 - bBytes*8)
+}

@@ -6,39 +6,42 @@ import (
 	"strings"
 )
 
-type Vec []Elem
-
-func Zeros(n Dim) Vec {
-	return Vec(make([]Elem, n))
+type BVec struct {
+	bBytes Size
+	data   []Batch
 }
 
-func Rands(n Dim) Vec {
-	buffSize := n * ElemLenBytes
+func ZeroBVec(n, bBytes Size) *BVec {
+	return &BVec{bBytes, make([]Batch, n)}
+}
+
+func RandBVec(n, bBytes Size) *BVec {
+	buffSize := n * bBytes
 	buff := make([]byte, buffSize)
 	rand.Read(buff)
 
-	vec := Zeros(n)
+	vec := ZeroBVec(n, bBytes)
+	bMask := BatchMask(bBytes)
 
 	for buffIdx := range buffSize {
-		vecIdx := buffIdx / ElemLenBytes
+		vecIdx := buffIdx / bBytes
 
-		shift := (buffIdx % ElemLenBytes) * 8
-		vec[vecIdx] |= Elem(buff[buffIdx]) << shift
+		shift := (buffIdx % bBytes) * 8
+		vec.data[vecIdx] |= Batch(buff[buffIdx]) << shift
 
 		if shift == 0 {
-			vec[vecIdx] &= ElemMask
+			vec.data[vecIdx] &= bMask
 		}
 	}
 	return vec
 }
 
-func (vec Vec) String() string {
-	n := len(vec)
+func (vec *BVec) String() string {
 	sb := strings.Builder{}
 
-	for i := range n {
-		val := vec[i]
-		sb.WriteString(fmt.Sprintf("%0*b\n", ElemLen, val))
+	for i := range len(vec.data) {
+		val := vec.data[i]
+		sb.WriteString(fmt.Sprintf("%0*b\n", vec.bBytes*8, val))
 	}
 	return sb.String()
 }
