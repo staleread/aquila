@@ -8,7 +8,7 @@ Public-Key Cryptosystem" paper.
 *"Let the ground set be a commutative ring. The enciphering key `E` is a
 composition of several time-varying inhomogeneous multifold linear invertible
 rules, which is made public. The deciphering key `D`, which is kept private by
-the designer, is the set of the in dividual rules in the composite enciphering
+the designer, is the set of the individual rules in the composite enciphering
 function."*
 
 ## References
