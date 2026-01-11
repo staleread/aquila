@@ -1,11 +1,5 @@
 package main
 
-import (
-	"fmt"
-	"math"
-	"strings"
-)
-
 type SLE struct {
 	*Mat
 }
@@ -44,31 +38,4 @@ func (sle *SLE) Coefs() *Mat {
 		}
 	}
 	return coefs
-}
-
-func (sle *SLE) String() string {
-	data := sle.Coefs().data
-	n := sle.n
-	sb := strings.Builder{}
-
-	idxPad := Size(math.Log10(float64(n)) + 1)
-	varPad := idxPad*2 + 2 // plus "x" and "," chars
-
-	for i := range n {
-		sb.WriteString(fmt.Sprintf("y%-*d = ", idxPad, i))
-
-		for j := range n {
-			if j > 0 {
-				sb.WriteString(" + ")
-			}
-			var varStr string
-
-			if data[n*i+j] != 0 {
-				varStr = fmt.Sprintf("x%d,%d", i, j)
-			}
-			sb.WriteString(fmt.Sprintf("%-*s", varPad, varStr))
-		}
-		sb.WriteRune('\n')
-	}
-	return sb.String()
 }

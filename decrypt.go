@@ -54,16 +54,18 @@ func (rule *DecRule) String() string {
 	s := len(rule.folds)
 	n := len(rule.perm) / s
 	idxPad := Size(math.Log10(float64(n*s+1)) + 1)
+	varPad := idxPad + 1
 
 	sb := strings.Builder{}
+	psb := strings.Builder{}
 
 	for i, f := range rule.folds {
 		sle := f.sle.Coefs().data
 		snle := f.snle.data
 
 		for j := range n {
-			permJ := rule.perm[n*i+j]
-			sb.WriteString(fmt.Sprintf("y%-*d = ", idxPad, permJ+1))
+			eqIdx := n*i + j
+			fmt.Fprintf(&sb, "y%-*d = ", idxPad, eqIdx+1)
 
 			// Linear part
 			for k := range n {
@@ -71,23 +73,29 @@ func (rule *DecRule) String() string {
 					sb.WriteString(" + ")
 				}
 				var varStr string
+				val := sle[n*j+k]
 
-				if sle[n*j+k] != 0 {
-					varStr = fmt.Sprintf("x%d", n*i+k+1)
+				if val != 0 {
+					idx := n*i + k
+					varStr = fmt.Sprintf("x%d", rule.perm[idx]+1)
 				}
-				sb.WriteString(fmt.Sprintf("%-*s", idxPad+2, varStr))
+				fmt.Fprintf(&sb, "%-*s", varPad, varStr)
 			}
 
 			// Non-linear part
 			for _, m := range snle[j] {
 				sb.WriteString(" + ")
 
-				for l, id := range m {
+				for l, idx := range m {
 					if l > 0 {
-						sb.WriteRune('*')
+						psb.WriteRune('*')
 					}
-					sb.WriteString(fmt.Sprintf("x%d", id+1))
+					fmt.Fprintf(&psb, "x%d", rule.perm[idx]+1)
 				}
+
+				pPad := Size(len(m))*(idxPad+2) - 1
+				fmt.Fprintf(&sb, "%-*s", pPad, psb.String())
+				psb.Reset()
 			}
 			sb.WriteRune('\n')
 		}

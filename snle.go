@@ -1,10 +1,6 @@
 package main
 
-import (
-	"crypto/rand"
-	"fmt"
-	"strings"
-)
+import "crypto/rand"
 
 type monom []VarIdx
 type poly []monom
@@ -58,29 +54,6 @@ func (snle *SNLE) Eval(x, b Vec) {
 		// a non-zero vector.
 		b[i] ^= sum
 	}
-}
-
-func (snle *SNLE) String() string {
-	data := snle.data
-	sb := strings.Builder{}
-
-	for i := range Size(len(data)) {
-		sb.WriteString(fmt.Sprintf("y%d = ", i))
-
-		for j, m := range data[i] {
-			if j > 0 {
-				sb.WriteString(" + ")
-			}
-			for k, id := range m {
-				if k > 0 {
-					sb.WriteRune('*')
-				}
-				sb.WriteString(fmt.Sprintf("x%d", id))
-			}
-		}
-		sb.WriteRune('\n')
-	}
-	return sb.String()
 }
 
 func randVarIds(n Size) []VarIdx {
