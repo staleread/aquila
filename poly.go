@@ -15,17 +15,16 @@ func RandPoly(deg Size, maxIdx VarIdx) Poly {
 		ids[i], ids[j] = ids[j], ids[i]
 	})
 
-	p := Poly{}
+	p := make(Poly, deg)
 	var added Size = 0
 
 	for i := range deg {
-		m := Monom{}
+		m := make(Monom, deg-i)
 
 		for j := range deg - i {
-			m = append(m, ids[(added+j)%maxIdx])
+			m[j] = ids[(added+j)%maxIdx]
 		}
-
-		p = append(p, m)
+		p[i] = m
 		added += deg - i
 	}
 	return p
