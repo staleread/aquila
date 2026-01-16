@@ -43,7 +43,7 @@ func (se *snle) String() string {
 	sb := strings.Builder{}
 
 	for i, p := range data {
-		sb.WriteString(fmt.Sprintf("y%d = ", i+1))
+		fmt.Fprintf(&sb, "y%d = ", i+1)
 
 		for j, m := range p {
 			if j > 0 {
@@ -53,7 +53,7 @@ func (se *snle) String() string {
 				if k > 0 {
 					sb.WriteRune('*')
 				}
-				sb.WriteString(fmt.Sprintf("x%d", id+1))
+				fmt.Fprintf(&sb, "x%d", id+1)
 			}
 		}
 		sb.WriteRune('\n')
