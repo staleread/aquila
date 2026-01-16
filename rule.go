@@ -35,24 +35,26 @@ func (r *rule) decrypt(pt, ct vec) {
 	s := len(r.folds)
 	n := r.n / s
 
-	permute(ct, r.p)
-
 	for i, f := range r.folds {
 		noise := zeros(n)
 		xPrev := pt[:n*i]
-		bCurr := pt[n*i : n*i+n]
+		bCurr := ct[n*i : n*i+n]
 
 		f.noise.eval(xPrev, noise)
 		bCurr.sub(noise)
 
-		xCurr := ct[n*i : n*i+n]
+		xCurr := pt[n*i : n*i+n]
 
 		f.lin.solve(xCurr, bCurr)
 	}
+
+	permuteBack(pt, r.p)
 }
 
 func (r *rule) encrypt(pt, ct vec) {
 	n := r.n / len(r.folds)
+
+	permute(pt, r.p)
 
 	for i, f := range r.folds {
 		xCurr := pt[n*i : n*i+n]
@@ -66,8 +68,6 @@ func (r *rule) encrypt(pt, ct vec) {
 		f.noise.eval(xPrev, noise)
 		bCurr.add(noise)
 	}
-
-	permuteBack(ct, r.p)
 }
 
 func (r *rule) toSnle() *snle {
@@ -106,7 +106,6 @@ func (r *rule) toSnle() *snle {
 					p = append(p, monom{coef})
 				}
 			}
-
 			res.data[n*i+j] = p
 		}
 	}

@@ -4,21 +4,28 @@ import "fmt"
 
 func main() {
 	const (
-		n      = 4
+		bSize  = 6
 		folds  = 2
 		degree = 3
 	)
 
-	r := randRule(folds, n, degree)
-	fmt.Println(r.toSnle())
+	r := randRule(folds, bSize/folds, degree)
+	sn := r.toSnle()
+	fmt.Println(sn)
 
-	pt := rands(n * folds)
-	ct := zeros(n * folds)
+	pt := rands(bSize)
+	fmt.Println("Plain text    ", pt)
 
-	fmt.Println("Plain text")
-	fmt.Println(pt)
+	exp := zeros(bSize)
+	sn.eval(pt, exp)
 
-	r.encrypt(pt, ct)
-	fmt.Println("Cipher text")
-	fmt.Println(ct)
+	fmt.Println("Cipher text (expected)", exp)
+
+	act := zeros(bSize)
+	r.encrypt(pt, act)
+	fmt.Println("Cipher text   (actual)", act)
+
+	dec := zeros(bSize)
+	r.decrypt(dec, act)
+	fmt.Println("Decrypted text", dec)
 }
