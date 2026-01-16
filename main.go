@@ -9,7 +9,7 @@ func main() {
 		degree = 3
 	)
 
-	r := randRule(folds, bSize/folds, degree)
+	r := randRule(bSize, folds, degree)
 	sn := r.toSnle()
 	fmt.Println(sn)
 

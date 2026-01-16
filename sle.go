@@ -14,14 +14,14 @@ func randSle(n int) *sle {
 
 // Solves SLE.
 // Writes the result to x. It's safe for x and b to point to the same vector.
-func (sle *sle) solve(x, b vec) {
-	sle.lt.subForward(x, b)
-	sle.ut.subBackward(x, x)
+func (s *sle) solve(x, b vec) {
+	s.lt.subForward(x, b)
+	s.ut.subBackward(x, x)
 }
 
 // Evaluates SLE.
-func (sle *sle) eval(x, b vec) {
-	n := sle.lt.n
+func (s *sle) eval(x, b vec) {
+	n := s.lt.n
 	tmp := zeros(n)
 
 	// U * x = tmp
@@ -29,7 +29,7 @@ func (sle *sle) eval(x, b vec) {
 		var sum elem = 0
 
 		for j := i; j < n; j++ {
-			sum = add(sum, mul(sle.ut.at(i, j), x[j]))
+			sum = add(sum, mul(s.ut.at(i, j), x[j]))
 		}
 		tmp[i] = sum
 	}
@@ -39,15 +39,15 @@ func (sle *sle) eval(x, b vec) {
 		var sum elem = 0
 
 		for j := range i + 1 {
-			sum = add(sum, mul(sle.lt.at(i, j), tmp[j]))
+			sum = add(sum, mul(s.lt.at(i, j), tmp[j]))
 		}
 		b[i] = sum
 	}
 }
 
 // Returns a matrix of SLE coefficients.
-func (sle *sle) coefs() *sqMat {
-	n := sle.lt.n
+func (s *sle) coefs() *sqMat {
+	n := s.lt.n
 	coefs := zeroSqMat(n)
 
 	for i := range n {
@@ -55,7 +55,7 @@ func (sle *sle) coefs() *sqMat {
 			var sum elem = 0
 
 			for k := range min(i, j) + 1 { // skip zero factors
-				sum = add(sum, mul(sle.lt.at(i, k), sle.ut.at(k, j)))
+				sum = add(sum, mul(s.lt.at(i, k), s.ut.at(k, j)))
 			}
 			coefs.data[n*i+j] = sum
 		}

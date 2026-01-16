@@ -13,8 +13,8 @@ func zeroSqMat(n int) *sqMat {
 	}
 }
 
-func (m *sqMat) at(i, j int) elem {
-	return m.data[m.n*i+j]
+func (sq *sqMat) at(i, j int) elem {
+	return sq.data[sq.n*i+j]
 }
 
 // Lower tringular matrix
