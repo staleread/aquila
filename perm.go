@@ -12,14 +12,14 @@ func randPerm(n int) perm {
 	return p
 }
 
-func (v vec) permute(p perm) {
+func permute[T any](v []T, p perm) {
 	for i := range len(v) - 1 {
 		j := p[i]
 		v[i], v[j] = v[j], v[i]
 	}
 }
 
-func (v vec) permuteBack(p perm) {
+func permuteBack[T any](v []T, p perm) {
 	for i := len(v) - 2; i >= 0; i-- {
 		j := p[i]
 		v[j], v[i] = v[i], v[j]

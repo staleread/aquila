@@ -35,7 +35,7 @@ func (r *rule) decrypt(pt, ct vec) {
 	s := len(r.folds)
 	n := r.n / s
 
-	ct.permute(r.p)
+	permute(ct, r.p)
 
 	for i, f := range r.folds {
 		noise := zeros(n)
@@ -68,5 +68,5 @@ func (r *rule) encrypt(pt, ct vec) {
 		bCurr.add(noise)
 	}
 
-	ct.permuteBack(r.p)
+	permuteBack(ct, r.p)
 }
