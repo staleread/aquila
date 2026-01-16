@@ -1,8 +1,8 @@
 package main
 
 type ruleFold struct {
-	lin   *sle
-	noise *snle
+	lin  *sle
+	nlin *snle
 }
 
 type rule struct {
@@ -16,16 +16,16 @@ func randRule(s, n, deg int) *rule {
 	folds := make([]ruleFold, s)
 
 	folds[0] = ruleFold{
-		lin:   randSle(n),
-		noise: emptySnle(n),
+		lin:  randSle(n),
+		nlin: emptySnle(n),
 	}
 
 	for i := 1; i < s; i++ {
 		maxIdx := idx(n * i)
 
 		folds[i] = ruleFold{
-			lin:   randSle(n),
-			noise: randSnle(n, deg, maxIdx),
+			lin:  randSle(n),
+			nlin: randSnle(n, deg, maxIdx),
 		}
 	}
 	return &rule{n: n * s, p: p, folds: folds}
@@ -40,14 +40,13 @@ func (r *rule) decrypt(pt, ct vec) {
 		xPrev := pt[:n*i]
 		bCurr := ct[n*i : n*i+n]
 
-		f.noise.eval(xPrev, noise)
+		f.nlin.eval(xPrev, noise)
 		bCurr.sub(noise)
 
 		xCurr := pt[n*i : n*i+n]
 
 		f.lin.solve(xCurr, bCurr)
 	}
-
 	permuteBack(pt, r.p)
 }
 
@@ -65,21 +64,21 @@ func (r *rule) encrypt(pt, ct vec) {
 		noise := zeros(n)
 		xPrev := pt[:n*i]
 
-		f.noise.eval(xPrev, noise)
+		f.nlin.eval(xPrev, noise)
 		bCurr.add(noise)
 	}
 }
 
 func (r *rule) toSnle() *snle {
 	n := r.n / len(r.folds)
-	res := emptySnle(r.n)
+	se := emptySnle(r.n)
 
 	ids := orderedIds(r.n)
 	permute(ids, r.p)
 
 	for i, f := range r.folds {
 		lin := f.lin.coefs()
-		nlin := f.noise.data
+		nlin := f.nlin.data
 
 		for j := range n {
 			p := poly{}
@@ -106,8 +105,8 @@ func (r *rule) toSnle() *snle {
 					p = append(p, monom{coef})
 				}
 			}
-			res.data[n*i+j] = p
+			se.data[n*i+j] = p
 		}
 	}
-	return res
+	return se
 }

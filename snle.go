@@ -22,8 +22,8 @@ func randSnle(n, deg int, maxIdx idx) *snle {
 	return snle
 }
 
-func (snle *snle) eval(x, b vec) {
-	for i, p := range snle.data {
+func (se *snle) eval(x, b vec) {
+	for i, p := range se.data {
 		var sum elem = 0
 
 		for _, m := range p {
@@ -38,8 +38,8 @@ func (snle *snle) eval(x, b vec) {
 	}
 }
 
-func (s *snle) String() string {
-	data := s.data
+func (se *snle) String() string {
+	data := se.data
 	sb := strings.Builder{}
 
 	for i, p := range data {
