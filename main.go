@@ -10,7 +10,7 @@ func main() {
 	)
 
 	r := randRule(folds, n, degree)
-	fmt.Println(r)
+	fmt.Println(r.toSnle())
 
 	pt := rands(n * folds)
 	ct := zeros(n * folds)

@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"strings"
+)
+
 type snle struct {
 	data []poly
 }
@@ -31,4 +36,27 @@ func (snle *snle) eval(x, b vec) {
 		}
 		b[i] = sum
 	}
+}
+
+func (s *snle) String() string {
+	data := s.data
+	sb := strings.Builder{}
+
+	for i, p := range data {
+		sb.WriteString(fmt.Sprintf("y%d = ", i+1))
+
+		for j, m := range p {
+			if j > 0 {
+				sb.WriteString(" + ")
+			}
+			for k, id := range m {
+				if k > 0 {
+					sb.WriteRune('*')
+				}
+				sb.WriteString(fmt.Sprintf("x%d", id+1))
+			}
+		}
+		sb.WriteRune('\n')
+	}
+	return sb.String()
 }
