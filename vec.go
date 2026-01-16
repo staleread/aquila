@@ -1,25 +1,28 @@
 package main
 
-import "crypto/rand"
+type vec []elem
 
-type Vec []Elem
-
-func Zeros(n Size) Vec {
-	return Vec(make([]Elem, n))
+func zeros(n int) vec {
+	return make(vec, n)
 }
 
-func Rands(n Size) Vec {
-	vec := Zeros(n)
-	rand.Read(vec)
+func rands(n int) vec {
+	vec := zeros(n)
 
 	for i := range n {
-		vec[i] &= 1
+		vec[i] = randElem()
 	}
 	return vec
 }
 
-func (vec Vec) Permute(perm []VarIdx) {
-	for i, j := range perm {
-		vec[i], vec[j] = vec[j], vec[i]
+func (a vec) add(b vec) {
+	for i := range len(a) {
+		a[i] = add(a[i], b[i])
+	}
+}
+
+func (a vec) sub(b vec) {
+	for i := range len(a) {
+		a[i] = sub(a[i], b[i])
 	}
 }

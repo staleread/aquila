@@ -1,74 +1,80 @@
 package main
 
-import (
-	"fmt"
-	"strings"
-)
-
-type Mat struct {
-	n    Size
-	data Vec
+// Square matrix
+type sqMat struct {
+	n    int
+	data vec
 }
 
-// Creates a matrix with all elements set to zero.
-func ZeroMat(n Size) *Mat {
-	return &Mat{
+func zeroSqMat(n int) *sqMat {
+	return &sqMat{
 		n:    n,
-		data: Zeros(n * n),
+		data: zeros(n * n),
 	}
 }
 
-// Creates a random matrix
-func RandMat(n Size) *Mat {
-	return &Mat{
-		n:    n,
-		data: Rands(n * n),
-	}
+func (m *sqMat) at(i, j int) elem {
+	return m.data[m.n*i+j]
 }
 
-// Performs forward substitution on a lower triangular matrix. Diagonal elements of must be non-zero.
-// Writes the result to x. It's safe for x and b to point to the same vector.
-func (mat *Mat) SubForward(x, b Vec) {
-	n := mat.n
+// Lower tringular matrix
+type ltMat struct {
+	*sqMat
+}
+
+func randInvLtMat(n int) *ltMat {
+	sq := zeroSqMat(n)
 
 	for i := range n {
-		var num Elem = b[i]
-
-		for j := range n - 1 {
-			num ^= mat.data[n*i+j] & b[j]
+		for j := range i {
+			sq.data[n*i+j] = randElem()
 		}
-		x[i] = num ^ mat.data[n*i+i]
+		sq.data[n*i+i] = randNzElem()
+	}
+	return &ltMat{sq}
+}
+
+// Performs forward substitution. Diagonal elements of ltMat must be non-zero.
+// The result is written to x. It's safe for x and b to point to the same vector.
+func (lt *ltMat) subForward(x, b vec) {
+	for i := range lt.n {
+		num := b[i]
+
+		for j := range i {
+			num = sub(num, mul(lt.at(i, j), x[j]))
+		}
+		x[i] = div(num, lt.at(i, i))
 	}
 }
 
-// Performs backward substitution on a upper triangular matrix. Diagonal elements of must be non-zero.
-// Writes the result to x. It's safe for x and b to point to the same vector.
-func (mat *Mat) SubBackward(x, b Vec) {
-	n := int(mat.n)
+// Upper triangular matrix
+type utMat struct {
+	*sqMat
+}
+
+func randInvUtMat(n int) *utMat {
+	sq := zeroSqMat(n)
+
+	for i := range n {
+		sq.data[n*i+i] = randNzElem()
+		for j := i + 1; j < n; j++ {
+			sq.data[n*i+j] = randElem()
+		}
+	}
+	return &utMat{sq}
+}
+
+// Performs backward substitution. Diagonal elements of utMat of must be non-zero.
+// The result is written to x. It's safe for x and b to point to the same vector.
+func (ut *utMat) subBackward(x, b vec) {
+	n := ut.n
 
 	for i := n - 1; i >= 0; i-- {
-		var num Elem = b[i]
+		num := b[i]
 
 		for j := i + 1; j < n; j++ {
-			num ^= mat.data[n*i+j] & b[j]
+			num = sub(num, mul(ut.at(i, j), x[j]))
 		}
-		x[i] = num ^ mat.data[n*i+i]
+		x[i] = div(num, ut.at(i, i))
 	}
-}
-
-func (mat *Mat) String() string {
-	n := mat.n
-	sb := strings.Builder{}
-
-	for i := range n {
-		for j := range n {
-			if j > 0 {
-				sb.WriteRune(' ')
-			}
-			val := mat.data[n*i+j] & 1
-			sb.WriteString(fmt.Sprintf("%b", val))
-		}
-		sb.WriteRune('\n')
-	}
-	return sb.String()
 }

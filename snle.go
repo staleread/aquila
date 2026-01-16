@@ -1,36 +1,34 @@
 package main
 
-type SNLE struct {
-	data []Poly
+type snle struct {
+	data []poly
 }
 
-func EmptySNLE(n Size) *SNLE {
-	return &SNLE{data: make([]Poly, n)}
+func emptySnle(n int) *snle {
+	return &snle{make([]poly, n)}
 }
 
-func RandSNLE(n, deg Size, maxVarIdx VarIdx) *SNLE {
-	snle := EmptySNLE(n)
+func randSnle(n, deg int, maxIdx idx) *snle {
+	snle := emptySnle(n)
 
 	for i := range n {
-		snle.data[i] = RandPoly(deg, maxVarIdx)
+		snle.data[i] = randPoly(deg, maxIdx)
 	}
 	return snle
 }
 
-func (snle *SNLE) Eval(x, b Vec) {
+func (snle *snle) eval(x, b vec) {
 	for i, p := range snle.data {
-		var sum Elem = 0
+		var sum elem = 0
 
 		for _, m := range p {
-			var factor Elem = 1
+			var prod elem = 1
 
 			for _, idx := range m {
-				factor &= x[idx]
+				prod = mul(prod, x[idx])
 			}
-			sum ^= factor
+			sum = add(sum, prod)
 		}
-		// Use GF(2) addition(=subraction) instead of overriding b in case b is
-		// a non-zero vector.
-		b[i] ^= sum
+		b[i] = sum
 	}
 }

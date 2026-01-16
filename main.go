@@ -5,18 +5,20 @@ import "fmt"
 func main() {
 	const (
 		n      = 4
-		folds  = 3
+		folds  = 2
 		degree = 3
 	)
 
-	decRule := RandDecRule(folds, n, degree)
-	fmt.Println(decRule)
+	r := randRule(folds, n, degree)
+	fmt.Println(r)
 
-	c := Rands(n * folds)
-	fmt.Println("Before")
-	fmt.Println(c)
+	pt := rands(n * folds)
+	ct := zeros(n * folds)
 
-	decRule.Apply(c)
-	fmt.Println("After")
-	fmt.Println(c)
+	fmt.Println("Plain text")
+	fmt.Println(pt)
+
+	r.encrypt(pt, ct)
+	fmt.Println("Cipher text")
+	fmt.Println(ct)
 }
