@@ -1,31 +1,28 @@
 package main
 
-import "fmt"
+import (
+	"encoding/hex"
+	"fmt"
+)
 
 func main() {
-	const (
-		bSize  = 6
-		folds  = 2
-		degree = 3
-	)
+	const bSize = 16
+	const ptSize = bSize * 2
 
-	r := randRule(bSize, folds, degree)
-	sn := r.toSnle()
-	fmt.Println(sn)
+	pt := []byte("Hello, cipher!!!Hello, cipher!!!")
+	fmt.Println("Plain text     ", hex.EncodeToString(pt))
 
-	pt := rands(bSize)
-	fmt.Println("Plain text    ", pt)
+	k, err := GenerateKey(bSize)
 
-	exp := zeros(bSize)
-	sn.eval(pt, exp)
+	if err != nil {
+		panic(err.Error())
+	}
 
-	fmt.Println("Cipher text (expected)", exp)
+	ct := make([]byte, ptSize)
+	k.encryptTest(ct, pt)
+	fmt.Println("Cipther text   ", hex.EncodeToString(ct))
 
-	act := zeros(bSize)
-	r.encrypt(pt, act)
-	fmt.Println("Cipher text   (actual)", act)
-
-	dec := zeros(bSize)
-	r.decrypt(dec, act)
-	fmt.Println("Decrypted text", dec)
+	dec := make([]byte, ptSize)
+	k.Decrypt(dec, ct)
+	fmt.Println("Decrypted  text", hex.EncodeToString(dec))
 }

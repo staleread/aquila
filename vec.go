@@ -15,6 +15,10 @@ func rands(n int) vec {
 	return vec
 }
 
+func readVec(src []byte) vec {
+	return vec(readElems(src))
+}
+
 func (a vec) add(b vec) {
 	for i := range len(a) {
 		a[i] = add(a[i], b[i])
@@ -25,4 +29,8 @@ func (a vec) sub(b vec) {
 	for i := range len(a) {
 		a[i] = sub(a[i], b[i])
 	}
+}
+
+func (v vec) write(dst []byte) {
+	writeElems(dst, v)
 }

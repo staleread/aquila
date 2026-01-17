@@ -32,46 +32,46 @@ func randRule(size, folds, deg int) *rule {
 	return &rule{size, p, rFolds}
 }
 
-func (r *rule) decrypt(pt, ct vec) {
+func (r *rule) encrypt(dst, src vec) {
 	n := r.size / len(r.folds)
 
-	for i, f := range r.folds {
-		noise := zeros(n)
-		xPrev := pt[:n*i]
-		bCurr := ct[n*i : n*i+n]
-
-		f.nlin.eval(xPrev, noise)
-		bCurr.sub(noise)
-
-		xCurr := pt[n*i : n*i+n]
-
-		f.lin.solve(xCurr, bCurr)
-	}
-	permuteBack(pt, r.p)
-}
-
-func (r *rule) encrypt(pt, ct vec) {
-	n := r.size / len(r.folds)
-
-	permute(pt, r.p)
+	permute(src, r.p)
 
 	for i, f := range r.folds {
-		xCurr := pt[n*i : n*i+n]
-		bCurr := ct[n*i : n*i+n]
+		xCurr := src[n*i : n*i+n]
+		bCurr := dst[n*i : n*i+n]
 
 		f.lin.eval(xCurr, bCurr)
 
 		noise := zeros(n)
-		xPrev := pt[:n*i]
+		xPrev := src[:n*i]
 
 		f.nlin.eval(xPrev, noise)
 		bCurr.add(noise)
 	}
 }
 
+func (r *rule) decrypt(dst, src vec) {
+	n := r.size / len(r.folds)
+
+	for i, f := range r.folds {
+		noise := zeros(n)
+		xPrev := dst[:n*i]
+		bCurr := src[n*i : n*i+n]
+
+		f.nlin.eval(xPrev, noise)
+		bCurr.sub(noise)
+
+		xCurr := dst[n*i : n*i+n]
+
+		f.lin.solve(xCurr, bCurr)
+	}
+	permuteBack(dst, r.p)
+}
+
 func (r *rule) toSnle() *snle {
 	n := r.size / len(r.folds)
-	se := emptySnle(r.size)
+	s := emptySnle(r.size)
 
 	ids := orderedIds(r.size)
 	permute(ids, r.p)
@@ -105,8 +105,8 @@ func (r *rule) toSnle() *snle {
 					p = append(p, monom{coef})
 				}
 			}
-			se.data[n*i+j] = p
+			s.data[n*i+j] = p
 		}
 	}
-	return se
+	return s
 }
