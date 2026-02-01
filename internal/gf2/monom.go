@@ -112,8 +112,3 @@ func (m Monom) Size() int {
 func (m Monom) Syms() iter.Seq[Sym] {
 	return maps.Keys(m.data)
 }
-
-func (m Monom) hasSym(s Sym) bool {
-	_, ok := m.data[s]
-	return ok
-}
