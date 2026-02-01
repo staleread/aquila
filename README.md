@@ -12,7 +12,7 @@ the designer, is the set of the individual rules in the composite enciphering
 function."*
 
 For fast lookup of monomials inside a polinomial, `MSet-XOR-Hash` incremental
-hash was used, which is proved to be set-collision resistant.
+hash was used, which is proven to be set-collision resistant.
 
 ## References
 * [Puhua Guan "Cellular Automaton Public-Key Cryptosystem"](https://www.complex-systems.com/abstracts/v01_i01_a04/)
