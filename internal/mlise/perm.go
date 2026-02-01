@@ -2,15 +2,15 @@ package mlise
 
 import f "github.com/staleread/aquila/internal/gf2"
 
-type perm []f.Sym
+type perm []int
 
 func randPerm(n int) perm {
 	p := make(perm, n-1)
 	rands := f.RandSyms(n - 1)
 
 	// Fisher–Yates shuffle
-	for i := range f.Sym(n - 2) {
-		p[i] = (rands[i]%f.Sym(n) - i) + i
+	for i := range n - 1 {
+		p[i] = int(rands[i])%(n-i) + i
 	}
 	return p
 }
@@ -21,9 +21,7 @@ func (p perm) permute(v []f.Elt) {
 	}
 
 	for i, j := range p {
-		v[i] ^= v[j]
-		v[j] ^= v[i]
-		v[i] ^= v[j]
+		v[i], v[j] = v[j], v[i]
 	}
 }
 
@@ -34,10 +32,7 @@ func (p perm) permuteBack(v []f.Elt) {
 
 	for i := len(p) - 1; i >= 0; i-- {
 		j := p[i]
-
-		v[i] ^= v[j]
-		v[j] ^= v[i]
-		v[i] ^= v[j]
+		v[i], v[j] = v[j], v[i]
 	}
 }
 
@@ -50,9 +45,7 @@ func (p perm) ids() []f.Sym {
 	}
 
 	for i, j := range p {
-		ids[i] ^= ids[j]
-		ids[j] ^= ids[i]
-		ids[i] ^= ids[j]
+		ids[i], ids[j] = ids[j], ids[i]
 	}
 	return ids
 }

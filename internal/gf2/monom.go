@@ -26,7 +26,7 @@ func NewMonom(syms ...Sym) Monom {
 
 	for _, s := range syms {
 		data[s] = struct{}{}
-		hash ^= symHash(s)
+		hash ^= hashSym(s)
 	}
 	return Monom{data, hash}
 }
@@ -49,7 +49,7 @@ func RandMonom(deg int, maxSym Sym) Monom {
 			s = randUp + i
 		}
 		data[s] = struct{}{}
-		hash ^= symHash(s)
+		hash ^= hashSym(s)
 	}
 	return Monom{data, hash}
 }
@@ -67,17 +67,20 @@ func hashSym(s Sym) uint32 {
 
 func (a Monom) Mul(b Monom) Monom {
 	data := make(symSet, max(len(a.data), len(b.data)))
+	hash := a.hash ^ b.hash
 
 	for s := range a.data {
 		data[s] = struct{}{}
 	}
 
 	for s := range b.data {
-		if !a.hasSym(s) {
+		if _, ok := a.data[s]; !ok {
 			data[s] = struct{}{}
+		} else {
+			hash ^= hashSym(s)
 		}
 	}
-	return Monom{data, a.hash ^ b.hash}
+	return Monom{data, hash}
 }
 
 func (a Monom) Equals(b Monom) bool {

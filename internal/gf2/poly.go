@@ -1,10 +1,6 @@
 package gf2
 
-import (
-	"fmt"
-	"iter"
-	"strings"
-)
+import "iter"
 
 type Poly map[symHash][]Monom
 
@@ -18,7 +14,7 @@ func NewPoly(monoms []Monom) Poly {
 	p := make(Poly, len(monoms))
 
 	for _, m := range monoms {
-		p.addMonomUnsafe(m)
+		p.toggleMonom(m)
 	}
 	return p
 }
@@ -55,7 +51,7 @@ func (a Poly) Mul(b Poly) Poly {
 
 	for ma := range a.Monoms() {
 		for mb := range b.Monoms() {
-			pNew.addMonomUnsafe(ma.Mul(mb))
+			pNew.toggleMonom(ma.Mul(mb))
 		}
 	}
 	return pNew
@@ -70,15 +66,6 @@ func (p Poly) Eval(x []Elt) Elt {
 	return sum
 }
 
-func (p Poly) Clone() Poly {
-	pNew := make(Poly, len(p))
-
-	for m := range p.Monoms() {
-		pNew.addMonomUnsafe(m)
-	}
-	return pNew
-}
-
 func (p Poly) Monoms() iter.Seq[Monom] {
 	return func(yield func(Monom) bool) {
 		for _, buck := range p {
@@ -89,30 +76,6 @@ func (p Poly) Monoms() iter.Seq[Monom] {
 			}
 		}
 	}
-}
-
-func (p Poly) String() string {
-	sb := strings.Builder{}
-
-	firstMonom := true
-	for m := range p.Monoms() {
-		if !firstMonom {
-			sb.WriteString(" + ")
-		}
-		firstMonom = false
-
-		firstSym := true
-		for s := range m.Syms() {
-			if !firstSym {
-				sb.WriteRune('*')
-			}
-			firstSym = false
-			fmt.Fprintf(&sb, "x%d", s+1)
-		}
-	}
-	sb.WriteRune('\n')
-
-	return sb.String()
 }
 
 func (p Poly) hasMonom(m Monom) bool {
@@ -130,13 +93,37 @@ func (p Poly) hasMonom(m Monom) bool {
 	return false
 }
 
-func (p Poly) addMonomUnsafe(m Monom) {
+func (p Poly) toggleMonom(m Monom) {
 	hash := m.hash
 	buck, ok := p[hash]
 
 	if !ok {
 		p[hash] = []Monom{m}
-	} else {
+		return
+	}
+
+	for i, bm := range buck {
+		if m.Equals(bm) {
+			if len(buck) == 1 {
+				delete(p, m.hash)
+				return
+			}
+			last := len(buck) - 1
+			buck[i] = buck[last]
+
+			p[m.hash] = buck[:last]
+			return
+		}
+	}
+	p[hash] = append(buck, m)
+}
+
+func (p Poly) addMonomUnsafe(m Monom) {
+	hash := m.hash
+
+	if buck, ok := p[hash]; ok {
 		p[hash] = append(buck, m)
+	} else {
+		p[hash] = []Monom{m}
 	}
 }

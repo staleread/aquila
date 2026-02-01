@@ -48,18 +48,19 @@ func (ca *InvertibleCA) ApplyInverse(state []f.Elt) {
 	}
 
 	sv := la.Vec(state)
+	lastParity := (len(ca.rules) - 1) % 2
 
-	for i := len(ca.rules) - 1; i < 0; i-- {
+	for i := len(ca.rules) - 1; i >= 0; i-- {
 		r := ca.rules[i]
 
-		if i%2 == 0 {
-			r.Solve(sv, ca.tmp)
-		} else {
+		if i%2 == lastParity {
 			r.Solve(ca.tmp, sv)
+		} else {
+			r.Solve(sv, ca.tmp)
 		}
 	}
 
-	if len(ca.rules)%2 == 1 {
+	if lastParity == 0 {
 		copy(sv, ca.tmp)
 	}
 }
@@ -68,7 +69,7 @@ func (ca *InvertibleCA) ToGeneralCA() *GeneralCA {
 	snle := ca.rules[0].ToSNLE()
 
 	for i := 1; i < len(ca.rules); i++ {
-		snle = snle.Compose(ca.rules[i].ToSNLE())
+		snle = ca.rules[i].ToSNLE().Compose(snle)
 	}
 	return newGeneralCA(ca.size, snle)
 }
