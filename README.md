@@ -22,16 +22,15 @@ that maps *S^n => S^n* and satisfies the following conditions:
 * With some key information, an inverse can be easily computed
 
 Invertible cellular automata with a large neighbourhood are good candidates for
-that purpose.
+the purpose.
 
-### Invertible CA
+### Invertible CA and rule structure
 
-Each block of a plain text can be encrypted by applying a sequence of *r*
-invertible rules:
+Each block of a plain text is encrypted by applying a sequence of *r*
+invertible rules.
 
-Each rule (referred as *MLISE* -- Multi-fold Linear Invertible System of
-Equations -- in the codebase) is a set of *n* functions, which are constructed
-by partitioning the variables into *s* "folds":
+Each rule is a set of *n* functions, which are constructed by partitioning the
+variables into *s* "folds":
 
 ```
 (x1, x2, ... xn) => (x_{1,1}, ...  x_{1,k1}), ... (x_{s,1}, ... x_{s,ks})
@@ -53,7 +52,7 @@ For each rule, the following conditions must hold for every fold:
 4. **Invertible Coefficient Matrix:** For each fold, the linear coefficients
    (over *S*) form an invertible matrix.
 
-#### Worked Example
+### Invertible CA example
 
 Suppose `S` is GF(2) and block size `n = 5`.
 
@@ -113,8 +112,8 @@ y5 =         x3' + x1'
                     "noise"
 ```
 
-That's it! With that setup we can easily "encrypt" a block of plain text by
-just evaluating the equations.
+That's it! Now we can easily encrypt a block of plain text by applying
+a sequence of rules:
 
 ```
 (y1, y2, ... yn) =  E_r(E_{r-1}(... E_1(x1, x2, ... xn)))
@@ -152,8 +151,8 @@ y_f1 = A * x_f1
 y_f2 - n_f2 = A * x_f2
 ```
 
-Now, the finding a solution is as easy as solving a system of linear equations
-and adding the noise when necessary.
+Now, finding the solution is as easy as solving a system of linear equations
+and removing the noise.
 
 ### General one-way CA, or making finding an inverse more difficult
 
