@@ -29,12 +29,6 @@ that purpose.
 Each block of a plain text can be encrypted by applying a sequence of *r*
 invertible rules:
 
-#### Rule structure
-
-```
-(y1, y2, ... yn) =  E_r(E_{r-1}(... E_1(x1, x2, ... xn)))
-```
-
 Each rule (referred as *MLISE* -- Multi-fold Linear Invertible System of
 Equations -- in the codebase) is a set of *n* functions, which are constructed
 by partitioning the variables into *s* "folds":
@@ -122,7 +116,11 @@ y5 =         x3' + x1'
 That's it! With that setup we can easily "encrypt" a block of plain text by
 just evaluating the equations.
 
-For finding the inverse we basically need to apply the inverse of each rules in
+```
+(y1, y2, ... yn) =  E_r(E_{r-1}(... E_1(x1, x2, ... xn)))
+```
+
+For finding the inverse we basically need to apply the inverse of each rule in
 reversed order:
 
 ```
@@ -157,7 +155,7 @@ y_f2 - n_f2 = A * x_f2
 Now, the finding a solution is as easy as solving a system of linear equations
 and adding the noise when necessary.
 
-## General one-way CA, or making finding an inverse more difficult
+### General one-way CA, or making finding an inverse more difficult
 
 We can represent our invertible CA in a form of non-linear system of equations
 by composing the rules. That way, we can represent the `E()` as the following:
