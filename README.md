@@ -1,9 +1,8 @@
 # aquila 🦅
 
-Implementation of the idea proposed by Puhua Guan in ["Cellular Automaton
-Public-Key
+A public-key cryptosystem based on invertible cellular automata. Implements
+the idea proposed by Puhua Guan in ["Cellular Automaton Public-Key
 Cryptosystem"](https://www.complex-systems.com/abstracts/v01_i01_a04/) paper.
-
 
 ## Roadmap
 
