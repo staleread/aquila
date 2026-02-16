@@ -3,20 +3,20 @@ package la
 import f "github.com/staleread/aquila/internal/gf2"
 
 type SLE struct {
-	lt *ltMatrix
-	ut *utMatrix
+	lt *lowerTriangularMatrix
+	ut *upperTriangularMatrix
 }
 
 func RandSLE(n int) *SLE {
 	return &SLE{
-		lt: randInvertibleLtMatrix(n),
-		ut: randInvertibleUtMatrix(n),
+		lt: randInvertibleLowerTriangularMatrix(n),
+		ut: randInvertibleUpperTriangularMatrix(n),
 	}
 }
 
 func (s *SLE) Solve(dst, src Vector) {
-	s.lt.subForward(dst, src)
-	s.ut.subBackward(dst, dst)
+	s.lt.substituteForward(dst, src)
+	s.ut.substituteBackward(dst, dst)
 }
 
 func (s *SLE) Eval(dst, src Vector) {

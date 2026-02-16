@@ -18,12 +18,11 @@ func (sq *SquareMatrix) At(i, j int) f.Element {
 	return sq.data[sq.n*i+j]
 }
 
-// Lower tringular matrix
-type ltMatrix struct {
+type lowerTriangularMatrix struct {
 	*SquareMatrix
 }
 
-func randInvertibleLtMatrix(n int) *ltMatrix {
+func randInvertibleLowerTriangularMatrix(n int) *lowerTriangularMatrix {
 	sq := zeroSquareMatrix(n)
 
 	dVals := f.RandNonZeroElements(n)
@@ -38,12 +37,12 @@ func randInvertibleLtMatrix(n int) *ltMatrix {
 		}
 		sq.data[n*i+i] = dVals[i]
 	}
-	return &ltMatrix{sq}
+	return &lowerTriangularMatrix{sq}
 }
 
-// Performs forward substitution. Diagonal elements of ltMatrix must be non-zero.
+// Diagonal elements of the matrix must be non-zero.
 // The result is written to x. It's safe for x and b to point to the same vector.
-func (lt *ltMatrix) subForward(x, b Vector) {
+func (lt *lowerTriangularMatrix) substituteForward(x, b Vector) {
 	for i := range lt.n {
 		num := b[i]
 
@@ -54,12 +53,11 @@ func (lt *ltMatrix) subForward(x, b Vector) {
 	}
 }
 
-// Upper triangular matrix
-type utMatrix struct {
+type upperTriangularMatrix struct {
 	*SquareMatrix
 }
 
-func randInvertibleUtMatrix(n int) *utMatrix {
+func randInvertibleUpperTriangularMatrix(n int) *upperTriangularMatrix {
 	sq := zeroSquareMatrix(n)
 
 	dVals := f.RandNonZeroElements(n)
@@ -74,12 +72,12 @@ func randInvertibleUtMatrix(n int) *utMatrix {
 		}
 		off += n - (i + 1)
 	}
-	return &utMatrix{sq}
+	return &upperTriangularMatrix{sq}
 }
 
-// Performs backward substitution. Diagonal elements of utMatrix of must be non-zero.
+// Diagonal elements of the matrix of must be non-zero.
 // The result is written to x. It's safe for x and b to point to the same vector.
-func (ut *utMatrix) subBackward(x, b Vector) {
+func (ut *upperTriangularMatrix) substituteBackward(x, b Vector) {
 	n := ut.n
 
 	for i := n - 1; i >= 0; i-- {
