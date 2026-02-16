@@ -85,7 +85,7 @@ y2 =     x5'     /
 
 y3 = x1'         \
 y4 =     x2'      | Fold 2
-y5 =         x3' /
+y5 = x1'   + x3' /
 ```
 
 Now add some "noise" in a variables from the previous folds
@@ -106,7 +106,7 @@ y1 = x4'
 y2 =     x5'
 y3 = x1'         + x4' * x5'
 y4 =     x2'     + x1' * x4'
-y5 =         x3' + x1'
+y5 = x1'   + x3'
                    \______/
                     "noise"
 ```
