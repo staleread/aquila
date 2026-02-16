@@ -21,11 +21,11 @@ func NewSNLE(arr []f.Polynomial) SNLE {
 	return SNLE(arr)
 }
 
-func RandSNLE(n, deg int, maxSubscript f.Subscript) SNLE {
+func RandSNLE(n, degree int, maxSub f.Subscript) SNLE {
 	se := SNLE(make([]f.Polynomial, n))
 
 	for i := range n {
-		se[i] = f.RandPolynomial(deg, maxSubscript)
+		se[i] = f.RandPolynomial(degree, maxSub)
 	}
 	return se
 }
@@ -55,7 +55,7 @@ func (se SNLE) Eval(dst, src []f.Element) {
 	}
 }
 
-func (se SNLE) Polies() []f.Polynomial {
+func (se SNLE) Polinomial() []f.Polynomial {
 	return []f.Polynomial(se)
 }
 

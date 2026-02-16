@@ -12,10 +12,10 @@ type InvertibleCA struct {
 	tmp   la.Vector
 }
 
-func NewInvertibleCA(size, folds, deg, rules int) *InvertibleCA {
+func NewInvertibleCA(size, folds, degree, rules int) *InvertibleCA {
 	caRules := make([]*ms.MLISE, rules)
 	for i := range rules {
-		caRules[i] = ms.RandMLISE(size, folds, deg)
+		caRules[i] = ms.RandMLISE(size, folds, degree)
 	}
 
 	tmp := la.ZeroVector(size)

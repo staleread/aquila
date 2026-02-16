@@ -19,11 +19,11 @@ func NewPolynomial(monomials []Monomial) Polynomial {
 	return p
 }
 
-func RandPolynomial(deg int, maxSubscript Subscript) Polynomial {
-	p := make(Polynomial, deg)
+func RandPolynomial(degree int, maxSub Subscript) Polynomial {
+	p := make(Polynomial, degree)
 
-	for i := range deg {
-		m := RandMonomial(deg-i, maxSubscript)
+	for i := range degree {
+		m := RandMonomial(degree-i, maxSub)
 		p.addMonomialUnsafe(m)
 	}
 	return p

@@ -18,7 +18,7 @@ type fold struct {
 	noise nla.SNLE
 }
 
-func RandMLISE(size, folds, deg int) *MLISE {
+func RandMLISE(size, folds, degree int) *MLISE {
 	permutation := randPermutation(size)
 	n := size / folds
 	sFolds := make([]fold, folds)
@@ -29,11 +29,11 @@ func RandMLISE(size, folds, deg int) *MLISE {
 	}
 
 	for i := 1; i < folds; i++ {
-		maxSubscript := f.Subscript(n * i)
+		maxSub := f.Subscript(n * i)
 
 		sFolds[i] = fold{
 			lin:   la.RandSLE(n),
-			noise: nla.RandSNLE(n, deg, maxSubscript),
+			noise: nla.RandSNLE(n, degree, maxSub),
 		}
 	}
 	return &MLISE{size, permutation, sFolds}
@@ -85,17 +85,17 @@ func (ms *MLISE) ToSNLE() nla.SNLE {
 		lin := fl.lin.Coefs()
 		noise := fl.noise
 
-		for j, p := range noise.Polies() {
-			monomials := make([]f.Monomial, 0, n)
+		for j, p := range noise.Polinomial() {
+			monoms := make([]f.Monomial, 0, n)
 
 			// Non-linear part
 			for m := range p.Monomials() {
-				subscripts := make([]f.Subscript, 0, m.Size())
+				subs := make([]f.Subscript, 0, m.Size())
 
 				for s := range m.Subscripts() {
-					subscripts = append(subscripts, ids[s])
+					subs = append(subs, ids[s])
 				}
-				monomials = append(monomials, f.NewMonomial(subscripts...))
+				monoms = append(monoms, f.NewMonomial(subs...))
 			}
 
 			// Linear part
@@ -106,9 +106,9 @@ func (ms *MLISE) ToSNLE() nla.SNLE {
 					continue
 				}
 				s := ids[n*i+k]
-				monomials = append(monomials, f.NewMonomial(s))
+				monoms = append(monoms, f.NewMonomial(s))
 			}
-			polies = append(polies, f.NewPolynomial(monomials))
+			polies = append(polies, f.NewPolynomial(monoms))
 		}
 	}
 	return nla.NewSNLE(polies)

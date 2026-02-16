@@ -20,29 +20,29 @@ var OneMonomial = Monomial{
 	hash: emptySubscriptHash,
 }
 
-func NewMonomial(subscripts ...Subscript) Monomial {
+func NewMonomial(subs ...Subscript) Monomial {
 	var hash subscriptHash
-	data := make(subscriptSet, len(subscripts))
+	data := make(subscriptSet, len(subs))
 
-	for _, s := range subscripts {
+	for _, s := range subs {
 		data[s] = struct{}{}
 		hash ^= hashSubscript(s)
 	}
 	return Monomial{data, hash}
 }
 
-func RandMonomial(deg int, maxSubscript Subscript) Monomial {
-	if Subscript(deg) > maxSubscript {
+func RandMonomial(degree int, maxSub Subscript) Monomial {
+	if Subscript(degree) > maxSub {
 		panic("Monomial degree exceeds subscript range")
 	}
 
 	var hash subscriptHash
-	data := make(subscriptSet, deg)
+	data := make(subscriptSet, degree)
 
-	rands := RandSubscripts(deg)
-	randUp := maxSubscript - Subscript(deg)
+	rands := RandSubscripts(degree)
+	randUp := maxSub - Subscript(degree)
 
-	for i := range Subscript(deg) {
+	for i := range Subscript(degree) {
 		s := rands[i] % (randUp + i + 1)
 
 		if _, ok := data[s]; ok {
