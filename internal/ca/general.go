@@ -8,15 +8,15 @@ import (
 type GeneralCA struct {
 	size int
 	rule nla.SNLE
-	tmp  []f.Elt
+	tmp  []f.Element
 }
 
 func newGeneralCA(size int, rule nla.SNLE) *GeneralCA {
-	tmp := make([]f.Elt, size)
+	tmp := make([]f.Element, size)
 	return &GeneralCA{size, rule, tmp}
 }
 
-func (ca *GeneralCA) Apply(state []f.Elt) {
+func (ca *GeneralCA) Apply(state []f.Element) {
 	if len(state) != ca.size {
 		panic("Invalid CA state size")
 	}

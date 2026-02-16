@@ -3,29 +3,29 @@ package la
 import f "github.com/staleread/aquila/internal/gf2"
 
 type SLE struct {
-	lt *ltMat
-	ut *utMat
+	lt *ltMatrix
+	ut *utMatrix
 }
 
 func RandSLE(n int) *SLE {
 	return &SLE{
-		lt: randInvLtMat(n),
-		ut: randInvUtMat(n),
+		lt: randInvertibleLtMatrix(n),
+		ut: randInvertibleUtMatrix(n),
 	}
 }
 
-func (s *SLE) Solve(dst, src Vec) {
+func (s *SLE) Solve(dst, src Vector) {
 	s.lt.subForward(dst, src)
 	s.ut.subBackward(dst, dst)
 }
 
-func (s *SLE) Eval(dst, src Vec) {
+func (s *SLE) Eval(dst, src Vector) {
 	n := s.lt.n
-	tmp := ZeroVec(n)
+	tmp := ZeroVector(n)
 
 	// U * src = tmp
 	for i := range n {
-		var sum f.Elt = 0
+		var sum f.Element = 0
 
 		for j := i; j < n; j++ {
 			sum = f.Add(sum, f.Mul(s.ut.At(i, j), src[j]))
@@ -35,7 +35,7 @@ func (s *SLE) Eval(dst, src Vec) {
 
 	// L * tmp = dst
 	for i := range n {
-		var sum f.Elt = 0
+		var sum f.Element = 0
 
 		for j := range i + 1 {
 			sum = f.Add(sum, f.Mul(s.lt.At(i, j), tmp[j]))
@@ -44,13 +44,13 @@ func (s *SLE) Eval(dst, src Vec) {
 	}
 }
 
-func (s *SLE) Coefs() *SqMat {
+func (s *SLE) Coefs() *SquareMatrix {
 	n := s.lt.n
-	coefs := zeroSqMat(n)
+	coefs := zeroSquareMatrix(n)
 
 	for i := range n {
 		for j := range n {
-			var sum f.Elt = 0
+			var sum f.Element = 0
 
 			for k := range min(i, j) + 1 { // skip zero factors
 				sum = f.Add(sum, f.Mul(s.lt.At(i, k), s.ut.At(k, j)))

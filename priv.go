@@ -22,14 +22,14 @@ var configs = map[int]config{
 	8: {
 		bSize:   8,
 		folds:   8,
-		polyDeg: 3,
-		rules:   2,
+		polyDeg: 2,
+		rules:   8,
 	},
 	16: {
 		bSize:   16,
 		folds:   8,
-		polyDeg: 2,
-		rules:   3,
+		polyDeg: 3,
+		rules:   16,
 	},
 	24: {
 		bSize:   24,
@@ -52,7 +52,7 @@ func GenerateKey(bSize int) (*PrivateKey, error) {
 		return nil, errors.New("Unsupported block size")
 	}
 
-	caSize := f.ElsInBytes(bSize)
+	caSize := f.ElementsInBytes(bSize)
 	ca := ca.NewInvertibleCA(caSize, cfg.folds, cfg.polyDeg, cfg.rules)
 
 	return &PrivateKey{bSize, ca}, nil
@@ -63,17 +63,17 @@ func (k *PrivateKey) Decrypt(dst, src []byte) {
 		panic("Size of cipher text must be a multiple of cipher block size")
 	}
 
-	tmp := make([]f.Elt, f.ElsInBytes(k.bSize))
+	tmp := make([]f.Element, f.ElementsInBytes(k.bSize))
 
 	for i := range len(src) / k.bSize {
 		from := k.bSize * i
 		to := k.bSize * (i + 1)
 
-		f.ReadEls(tmp, src[from:to])
+		f.ReadElements(tmp, src[from:to])
 
 		k.ca.ApplyInverse(tmp)
 
-		f.WriteEls(dst[from:to], tmp)
+		f.WriteElements(dst[from:to], tmp)
 	}
 }
 
@@ -87,16 +87,16 @@ func (k *PrivateKey) encryptTest(dst, src []byte) {
 		panic("Size of cipher text must be a multiple of cipher block size")
 	}
 
-	tmp := make([]f.Elt, f.ElsInBytes(k.bSize))
+	tmp := make([]f.Element, f.ElementsInBytes(k.bSize))
 
 	for i := range len(src) / k.bSize {
 		from := k.bSize * i
 		to := k.bSize * (i + 1)
 
-		f.ReadEls(tmp, src[from:to])
+		f.ReadElements(tmp, src[from:to])
 
 		k.ca.Apply(tmp)
 
-		f.WriteEls(dst[from:to], tmp)
+		f.WriteElements(dst[from:to], tmp)
 	}
 }

@@ -9,7 +9,7 @@ import (
 // Multifold linear invertible system of equations
 type MLISE struct {
 	size  int
-	perm  perm
+	permutation  permutation
 	folds []fold
 }
 
@@ -19,7 +19,7 @@ type fold struct {
 }
 
 func RandMLISE(size, folds, deg int) *MLISE {
-	perm := randPerm(size)
+	permutation := randPermutation(size)
 	n := size / folds
 	sFolds := make([]fold, folds)
 
@@ -29,20 +29,20 @@ func RandMLISE(size, folds, deg int) *MLISE {
 	}
 
 	for i := 1; i < folds; i++ {
-		maxSym := f.Sym(n * i)
+		maxSubscript := f.Subscript(n * i)
 
 		sFolds[i] = fold{
 			lin:   la.RandSLE(n),
-			noise: nla.RandSNLE(n, deg, maxSym),
+			noise: nla.RandSNLE(n, deg, maxSubscript),
 		}
 	}
-	return &MLISE{size, perm, sFolds}
+	return &MLISE{size, permutation, sFolds}
 }
 
-func (ms *MLISE) Eval(dst, src la.Vec) {
+func (ms *MLISE) Eval(dst, src la.Vector) {
 	n := ms.size / len(ms.folds)
 
-	ms.perm.permute(src)
+	ms.permutation.permute(src)
 
 	for i, fl := range ms.folds {
 		xCurr := src[n*i : n*i+n]
@@ -50,7 +50,7 @@ func (ms *MLISE) Eval(dst, src la.Vec) {
 
 		fl.lin.Eval(bCurr, xCurr)
 
-		noise := la.ZeroVec(n)
+		noise := la.ZeroVector(n)
 		xPrev := src[:n*i]
 
 		fl.noise.Eval(noise, xPrev)
@@ -58,11 +58,11 @@ func (ms *MLISE) Eval(dst, src la.Vec) {
 	}
 }
 
-func (ms *MLISE) Solve(dst, src la.Vec) {
+func (ms *MLISE) Solve(dst, src la.Vector) {
 	n := ms.size / len(ms.folds)
 
 	for i, fl := range ms.folds {
-		noise := la.ZeroVec(n)
+		noise := la.ZeroVector(n)
 		xPrev := dst[:n*i]
 		bCurr := src[n*i : n*i+n]
 
@@ -73,29 +73,29 @@ func (ms *MLISE) Solve(dst, src la.Vec) {
 
 		fl.lin.Solve(xCurr, bCurr)
 	}
-	ms.perm.permuteBack(dst)
+	ms.permutation.permuteBack(dst)
 }
 
 func (ms *MLISE) ToSNLE() nla.SNLE {
 	n := ms.size / len(ms.folds)
-	ids := ms.perm.ids()
-	polies := make([]f.Poly, 0, ms.size)
+	ids := ms.permutation.ids()
+	polies := make([]f.Polynomial, 0, ms.size)
 
 	for i, fl := range ms.folds {
 		lin := fl.lin.Coefs()
 		noise := fl.noise
 
 		for j, p := range noise.Polies() {
-			monoms := make([]f.Monom, 0, n)
+			monomials := make([]f.Monomial, 0, n)
 
 			// Non-linear part
-			for m := range p.Monoms() {
-				syms := make([]f.Sym, 0, m.Size())
+			for m := range p.Monomials() {
+				subscripts := make([]f.Subscript, 0, m.Size())
 
-				for s := range m.Syms() {
-					syms = append(syms, ids[s])
+				for s := range m.Subscripts() {
+					subscripts = append(subscripts, ids[s])
 				}
-				monoms = append(monoms, f.NewMonom(syms...))
+				monomials = append(monomials, f.NewMonomial(subscripts...))
 			}
 
 			// Linear part
@@ -106,9 +106,9 @@ func (ms *MLISE) ToSNLE() nla.SNLE {
 					continue
 				}
 				s := ids[n*i+k]
-				monoms = append(monoms, f.NewMonom(s))
+				monomials = append(monomials, f.NewMonomial(s))
 			}
-			polies = append(polies, f.NewPoly(monoms))
+			polies = append(polies, f.NewPolynomial(monomials))
 		}
 	}
 	return nla.NewSNLE(polies)

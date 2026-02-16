@@ -2,27 +2,27 @@ package gf2
 
 import "crypto/rand"
 
-type Elt uint8
+type Element uint8
 
-func ElsInBytes(bytes int) int {
+func ElementsInBytes(bytes int) int {
 	return bytes * 8
 }
 
-func RandEls(n int) []Elt {
-	els := make([]Elt, n)
+func RandElements(n int) []Element {
+	els := make([]Element, n)
 
 	buf := make([]byte, (n+7)/8)
 	rand.Read(buf)
 
 	for i := range n {
 		val := buf[i/8] >> (i % 8)
-		els[i] = Elt(val & 1)
+		els[i] = Element(val & 1)
 	}
 	return els
 }
 
-func RandNzEls(n int) []Elt {
-	els := make([]Elt, n)
+func RandNonZeroElements(n int) []Element {
+	els := make([]Element, n)
 
 	for i := range n {
 		els[i] = 1
@@ -30,37 +30,37 @@ func RandNzEls(n int) []Elt {
 	return els
 }
 
-func Add(a, b Elt) Elt {
+func Add(a, b Element) Element {
 	return a ^ b
 }
 
-func Sub(a, b Elt) Elt {
+func Sub(a, b Element) Element {
 	return a ^ b
 }
 
-func Mul(a, b Elt) Elt {
+func Mul(a, b Element) Element {
 	return a & b
 }
 
-func Div(a, b Elt) Elt {
+func Div(a, b Element) Element {
 	if b == 0 {
 		panic("Division by zero")
 	}
 	return a
 }
 
-func ReadEls(dst []Elt, src []byte) {
+func ReadElements(dst []Element, src []byte) {
 	if len(dst) > len(src)*8 {
 		panic("Failed to read elements. Not enough bytes to fill set all elements")
 	}
 
 	for i := range len(dst) {
 		val := (src[i/8] >> (i % 8)) & 1
-		dst[i] = Elt(val)
+		dst[i] = Element(val)
 	}
 }
 
-func WriteEls(dst []byte, src []Elt) {
+func WriteElements(dst []byte, src []Element) {
 	if len(dst)*8 < len(src) {
 		panic("Failed to write elements. Not enough bytes to write all elements")
 	}

@@ -15,16 +15,16 @@ func (k *PublicKey) Encrypt(dst, src []byte) {
 		panic("Size of cipher text must be a multiple of cipher block size")
 	}
 
-	tmp := make([]f.Elt, f.ElsInBytes(k.bSize))
+	tmp := make([]f.Element, f.ElementsInBytes(k.bSize))
 
 	for i := range len(src) / k.bSize {
 		from := k.bSize * i
 		to := k.bSize * (i + 1)
 
-		f.ReadEls(tmp, src[from:to])
+		f.ReadElements(tmp, src[from:to])
 
 		k.ca.Apply(tmp)
 
-		f.WriteEls(dst[from:to], tmp)
+		f.WriteElements(dst[from:to], tmp)
 	}
 }

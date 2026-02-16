@@ -2,32 +2,32 @@ package la
 
 import f "github.com/staleread/aquila/internal/gf2"
 
-type SqMat struct {
+type SquareMatrix struct {
 	n    int
-	data Vec
+	data Vector
 }
 
-func zeroSqMat(n int) *SqMat {
-	return &SqMat{
+func zeroSquareMatrix(n int) *SquareMatrix {
+	return &SquareMatrix{
 		n:    n,
-		data: ZeroVec(n * n),
+		data: ZeroVector(n * n),
 	}
 }
 
-func (sq *SqMat) At(i, j int) f.Elt {
+func (sq *SquareMatrix) At(i, j int) f.Element {
 	return sq.data[sq.n*i+j]
 }
 
 // Lower tringular matrix
-type ltMat struct {
-	*SqMat
+type ltMatrix struct {
+	*SquareMatrix
 }
 
-func randInvLtMat(n int) *ltMat {
-	sq := zeroSqMat(n)
+func randInvertibleLtMatrix(n int) *ltMatrix {
+	sq := zeroSquareMatrix(n)
 
-	dVals := f.RandNzEls(n)
-	ndVals := f.RandEls(n * (n + 1) / 2)
+	dVals := f.RandNonZeroElements(n)
+	ndVals := f.RandElements(n * (n + 1) / 2)
 
 	off := 0
 	for i := range n {
@@ -38,12 +38,12 @@ func randInvLtMat(n int) *ltMat {
 		}
 		sq.data[n*i+i] = dVals[i]
 	}
-	return &ltMat{sq}
+	return &ltMatrix{sq}
 }
 
-// Performs forward substitution. Diagonal elements of ltMat must be non-zero.
+// Performs forward substitution. Diagonal elements of ltMatrix must be non-zero.
 // The result is written to x. It's safe for x and b to point to the same vector.
-func (lt *ltMat) subForward(x, b Vec) {
+func (lt *ltMatrix) subForward(x, b Vector) {
 	for i := range lt.n {
 		num := b[i]
 
@@ -55,15 +55,15 @@ func (lt *ltMat) subForward(x, b Vec) {
 }
 
 // Upper triangular matrix
-type utMat struct {
-	*SqMat
+type utMatrix struct {
+	*SquareMatrix
 }
 
-func randInvUtMat(n int) *utMat {
-	sq := zeroSqMat(n)
+func randInvertibleUtMatrix(n int) *utMatrix {
+	sq := zeroSquareMatrix(n)
 
-	dVals := f.RandNzEls(n)
-	ndVals := f.RandEls(n * (n + 1) / 2)
+	dVals := f.RandNonZeroElements(n)
+	ndVals := f.RandElements(n * (n + 1) / 2)
 
 	off := 0
 	for i := range n {
@@ -74,12 +74,12 @@ func randInvUtMat(n int) *utMat {
 		}
 		off += n - (i + 1)
 	}
-	return &utMat{sq}
+	return &utMatrix{sq}
 }
 
-// Performs backward substitution. Diagonal elements of utMat of must be non-zero.
+// Performs backward substitution. Diagonal elements of utMatrix of must be non-zero.
 // The result is written to x. It's safe for x and b to point to the same vector.
-func (ut *utMat) subBackward(x, b Vec) {
+func (ut *utMatrix) subBackward(x, b Vector) {
 	n := ut.n
 
 	for i := n - 1; i >= 0; i-- {

@@ -9,7 +9,7 @@ import (
 type InvertibleCA struct {
 	size  int
 	rules []*ms.MLISE
-	tmp   la.Vec
+	tmp   la.Vector
 }
 
 func NewInvertibleCA(size, folds, deg, rules int) *InvertibleCA {
@@ -18,16 +18,16 @@ func NewInvertibleCA(size, folds, deg, rules int) *InvertibleCA {
 		caRules[i] = ms.RandMLISE(size, folds, deg)
 	}
 
-	tmp := la.ZeroVec(size)
+	tmp := la.ZeroVector(size)
 	return &InvertibleCA{size, caRules, tmp}
 }
 
-func (ca *InvertibleCA) Apply(state []f.Elt) {
+func (ca *InvertibleCA) Apply(state []f.Element) {
 	if len(state) != ca.size {
 		panic("Invalid CA state size")
 	}
 
-	sv := la.Vec(state)
+	sv := la.Vector(state)
 
 	for i, r := range ca.rules {
 		if i%2 == 0 {
@@ -42,12 +42,12 @@ func (ca *InvertibleCA) Apply(state []f.Elt) {
 	}
 }
 
-func (ca *InvertibleCA) ApplyInverse(state []f.Elt) {
+func (ca *InvertibleCA) ApplyInverse(state []f.Element) {
 	if len(state) != ca.size {
 		panic("Invalid CA state size")
 	}
 
-	sv := la.Vec(state)
+	sv := la.Vector(state)
 	lastParity := (len(ca.rules) - 1) % 2
 
 	for i := len(ca.rules) - 1; i >= 0; i-- {

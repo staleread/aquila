@@ -2,11 +2,11 @@ package mlise
 
 import f "github.com/staleread/aquila/internal/gf2"
 
-type perm []int
+type permutation []int
 
-func randPerm(n int) perm {
-	p := make(perm, n-1)
-	rands := f.RandSyms(n - 1)
+func randPermutation(n int) permutation {
+	p := make(permutation, n-1)
+	rands := f.RandSubscripts(n - 1)
 
 	// Fisher–Yates shuffle
 	for i := range n - 1 {
@@ -15,7 +15,7 @@ func randPerm(n int) perm {
 	return p
 }
 
-func (p perm) permute(v []f.Elt) {
+func (p permutation) permute(v []f.Element) {
 	if len(v) != len(p)+1 {
 		panic("Array size doesn't match the permutation size")
 	}
@@ -25,7 +25,7 @@ func (p perm) permute(v []f.Elt) {
 	}
 }
 
-func (p perm) permuteBack(v []f.Elt) {
+func (p permutation) permuteBack(v []f.Element) {
 	if len(v) != len(p)+1 {
 		panic("Array size doesn't match the permutation size")
 	}
@@ -36,11 +36,11 @@ func (p perm) permuteBack(v []f.Elt) {
 	}
 }
 
-func (p perm) ids() []f.Sym {
+func (p permutation) ids() []f.Subscript {
 	n := len(p) + 1
-	ids := make([]f.Sym, n)
+	ids := make([]f.Subscript, n)
 
-	for i := range f.Sym(n) {
+	for i := range f.Subscript(n) {
 		ids[i] = i
 	}
 
