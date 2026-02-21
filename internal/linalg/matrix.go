@@ -1,6 +1,6 @@
-package la
+package linalg
 
-import f "github.com/staleread/aquila/internal/gf2"
+import "github.com/staleread/aquila/internal/field"
 
 type SquareMatrix struct {
 	n    int
@@ -14,7 +14,7 @@ func zeroSquareMatrix(n int) *SquareMatrix {
 	}
 }
 
-func (sq *SquareMatrix) At(i, j int) f.Element {
+func (sq *SquareMatrix) At(i, j int) field.Element {
 	return sq.data[sq.n*i+j]
 }
 
@@ -25,8 +25,8 @@ type lowerTriangularMatrix struct {
 func randInvertibleLowerTriangularMatrix(n int) *lowerTriangularMatrix {
 	sq := zeroSquareMatrix(n)
 
-	dVals := f.RandNonZeroElements(n)
-	ndVals := f.RandElements(n * (n + 1) / 2)
+	dVals := field.RandNonZeroElements(n)
+	ndVals := field.RandElements(n * (n + 1) / 2)
 
 	off := 0
 	for i := range n {
@@ -47,9 +47,9 @@ func (lt *lowerTriangularMatrix) substituteForward(x, b Vector) {
 		num := b[i]
 
 		for j := range i {
-			num = f.Sub(num, f.Mul(lt.At(i, j), x[j]))
+			num = field.Sub(num, field.Mul(lt.At(i, j), x[j]))
 		}
-		x[i] = f.Div(num, lt.At(i, i))
+		x[i] = field.Div(num, lt.At(i, i))
 	}
 }
 
@@ -60,8 +60,8 @@ type upperTriangularMatrix struct {
 func randInvertibleUpperTriangularMatrix(n int) *upperTriangularMatrix {
 	sq := zeroSquareMatrix(n)
 
-	dVals := f.RandNonZeroElements(n)
-	ndVals := f.RandElements(n * (n + 1) / 2)
+	dVals := field.RandNonZeroElements(n)
+	ndVals := field.RandElements(n * (n + 1) / 2)
 
 	off := 0
 	for i := range n {
@@ -84,8 +84,8 @@ func (ut *upperTriangularMatrix) substituteBackward(x, b Vector) {
 		num := b[i]
 
 		for j := i + 1; j < n; j++ {
-			num = f.Sub(num, f.Mul(ut.At(i, j), x[j]))
+			num = field.Sub(num, field.Mul(ut.At(i, j), x[j]))
 		}
-		x[i] = f.Div(num, ut.At(i, i))
+		x[i] = field.Div(num, ut.At(i, i))
 	}
 }

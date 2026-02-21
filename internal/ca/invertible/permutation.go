@@ -1,12 +1,12 @@
-package mlise
+package invertible
 
-import f "github.com/staleread/aquila/internal/gf2"
+import "github.com/staleread/aquila/internal/field"
 
 type permutation []int
 
 func randPermutation(n int) permutation {
 	p := make(permutation, n-1)
-	rands := f.RandSubscripts(n - 1)
+	rands := field.RandSubscripts(n - 1)
 
 	// Fisher–Yates shuffle
 	for i := range n - 1 {
@@ -15,7 +15,7 @@ func randPermutation(n int) permutation {
 	return p
 }
 
-func (p permutation) permute(v []f.Element) {
+func (p permutation) permute(v []field.Element) {
 	if len(v) != len(p)+1 {
 		panic("Array size doesn't match the permutation size")
 	}
@@ -25,7 +25,7 @@ func (p permutation) permute(v []f.Element) {
 	}
 }
 
-func (p permutation) permuteBack(v []f.Element) {
+func (p permutation) permuteBack(v []field.Element) {
 	if len(v) != len(p)+1 {
 		panic("Array size doesn't match the permutation size")
 	}
@@ -36,11 +36,11 @@ func (p permutation) permuteBack(v []f.Element) {
 	}
 }
 
-func (p permutation) ids() []f.Subscript {
+func (p permutation) ids() []field.Subscript {
 	n := len(p) + 1
-	ids := make([]f.Subscript, n)
+	ids := make([]field.Subscript, n)
 
-	for i := range f.Subscript(n) {
+	for i := range field.Subscript(n) {
 		ids[i] = i
 	}
 

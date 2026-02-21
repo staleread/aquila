@@ -1,4 +1,4 @@
-package gf2
+package field
 
 import "crypto/rand"
 
