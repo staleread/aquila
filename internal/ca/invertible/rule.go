@@ -78,20 +78,20 @@ func (rule *rule) ApplyInverse(dst, src linalg.Vector) {
 func (rule *rule) general() general.Rule {
 	n := rule.size / len(rule.folds)
 	ids := rule.permutation.ids()
-	polies := make([]field.PolynomialPtr, 0, rule.size)
+	polies := make([]field.Polynomial, 0, rule.size)
 
 	for i, fl := range rule.folds {
 		lin := fl.lin.Coefs()
 		noise := fl.noise
 
 		for j, p := range noise {
-			monoms := make([]field.MonomialPtr, 0, n)
+			monoms := make([]field.Monomial, 0, n)
 
 			// Non-linear part
-			for m := range field.MonomialsOf(p) {
+			for m := range p.Monomials() {
 				subs := make([]field.Subscript, 0)
 
-				for s := range field.SubscriptsOf(m) {
+				for s := range m.Syms() {
 					subs = append(subs, ids[s])
 				}
 				monoms = append(monoms, field.NewMonomial(subs...))

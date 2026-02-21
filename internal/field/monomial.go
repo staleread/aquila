@@ -5,58 +5,33 @@ import (
 	"maps"
 )
 
-type MonomialPtr = uint64
-type monomial map[Subscript]struct{}
-
-var monomialCache = map[MonomialPtr]monomial{
-	0: nil,
+type Monomial struct {
+	data map[Subscript]struct{}
+	hash uint32
 }
 
-func NewMonomial(subs ...Subscript) MonomialPtr {
-	var ptr MonomialPtr
-	monom := make(monomial, len(subs))
+var OneMonomial = Monomial{data: nil, hash: 0}
+
+func NewMonomial(subs ...Subscript) Monomial {
+	var hash uint32
+	data := make(map[Subscript]struct{}, len(subs))
 
 	for _, s := range subs {
-		if _, ok := monom[s]; !ok {
-			monom[s] = struct{}{}
-			ptr ^= hashSubscript(s)
+		if _, ok := data[s]; !ok {
+			data[s] = struct{}{}
+			hash ^= hashSubscript(s)
 		}
 	}
-	return safeMonomial(monom, ptr)
+	return Monomial{data, hash}
 }
 
-func SubscriptsOf(mPtr MonomialPtr) iter.Seq[Subscript] {
-	m := monomialCache[mPtr]
-	return maps.Keys(m)
-}
-
-func MulMonomials(aPtr, bPtr MonomialPtr) MonomialPtr {
-	a, b := monomialCache[aPtr], monomialCache[bPtr]
-
-	ptr := aPtr ^ bPtr
-	prod := make(monomial, max(len(a), len(b)))
-
-	for s := range a {
-		prod[s] = struct{}{}
-	}
-
-	for s := range b {
-		if _, ok := a[s]; !ok {
-			prod[s] = struct{}{}
-		} else {
-			ptr ^= hashSubscript(s)
-		}
-	}
-	return safeMonomial(prod, ptr)
-}
-
-func randMonomial(degree int, maxSub Subscript) MonomialPtr {
+func randMonomial(degree int, maxSub Subscript) Monomial {
 	if Subscript(degree) > maxSub {
 		panic("Monomial degree exceeds subscript range")
 	}
 
-	var ptr MonomialPtr
-	monom := make(monomial, degree)
+	var hash uint32
+	data := make(map[Subscript]struct{}, degree)
 
 	rands := RandSubscripts(degree)
 	randUp := maxSub - Subscript(degree)
@@ -64,71 +39,67 @@ func randMonomial(degree int, maxSub Subscript) MonomialPtr {
 	for i := range Subscript(degree) {
 		s := rands[i] % (randUp + i + 1)
 
-		if _, ok := monom[s]; ok {
+		if _, ok := data[s]; ok {
 			s = randUp + i
 		}
-		monom[s] = struct{}{}
-		ptr ^= hashSubscript(s)
+		data[s] = struct{}{}
+		hash ^= hashSubscript(s)
 	}
-	return safeMonomial(monom, ptr)
+	return Monomial{data, hash}
 }
 
-func evalMonomial(mPtr MonomialPtr, x []Element) Element {
-	m := monomialCache[mPtr]
+func (a Monomial) Mul(b Monomial) Monomial {
+	data := make(map[Subscript]struct{}, max(len(a.data), len(b.data)))
+	hash := a.hash ^ b.hash
 
+	for s := range a.data {
+		data[s] = struct{}{}
+	}
+
+	for s := range b.data {
+		if _, ok := a.data[s]; !ok {
+			data[s] = struct{}{}
+		} else {
+			// x*x = x in GF(2), so cancel from hash and omit from data
+			hash ^= hashSubscript(s)
+		}
+	}
+	return Monomial{data, hash}
+}
+
+func (m Monomial) Syms() iter.Seq[Subscript] {
+	return maps.Keys(m.data)
+}
+
+func (m Monomial) Eval(x []Element) Element {
 	var prod Element = 1
 
-	for s := range m {
+	for s := range m.data {
 		prod = Mul(prod, x[s])
 	}
 	return prod
 }
 
-func safeMonomial(candidate monomial, suggestedPtr MonomialPtr) MonomialPtr {
-	other, ok := monomialCache[suggestedPtr]
-
-	if !ok {
-		monomialCache[suggestedPtr] = candidate
-		return suggestedPtr
-	}
-
-	if other.equals(candidate) {
-		return suggestedPtr
-	}
-
-	newPtr := suggestedPtr
-	for {
-		newPtr++
-		if _, ok := monomialCache[newPtr]; !ok {
-			monomialCache[newPtr] = candidate
-			return newPtr
-		}
-
-		if newPtr == suggestedPtr {
-			panic("Monomial cache is out of hash space")
-		}
-	}
-}
-
-// https://dl.acm.org/doi/10.1145/2714064.2660195
-func hashSubscript(s Subscript) MonomialPtr {
-	x := MonomialPtr(s)
-
-	x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9
-	x = (x ^ (x >> 27)) * 0x94d049bb133111eb
-	x = x ^ (x >> 31)
-	return x
-}
-
-func (a monomial) equals(b monomial) bool {
-	if len(a) != len(b) {
+func (a Monomial) Equals(b Monomial) bool {
+	if len(a.data) != len(b.data) {
 		return false
 	}
 
-	for s := range b {
-		if _, ok := a[s]; !ok {
+	for s := range b.data {
+		if _, ok := a.data[s]; !ok {
 			return false
 		}
 	}
 	return true
+}
+
+// https://stackoverflow.com/a/12996028
+func hashSubscript(s Subscript) uint32 {
+	x := uint32(s)
+
+	x = ((x >> 16) ^ x) * 0x45d9f3b
+	x = ((x >> 16) ^ x) * 0x45d9f3b
+	x = (x >> 16) ^ x
+
+	return x
 }

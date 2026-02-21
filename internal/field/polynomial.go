@@ -1,137 +1,129 @@
 package field
 
-import (
-	"iter"
-	"maps"
-)
+import "iter"
 
-type PolynomialPtr = uint64
-type polynomial map[MonomialPtr]struct{}
+type Polynomial map[uint32][]Monomial
 
-var polynomialCache = map[PolynomialPtr]polynomial{
-	0: nil,
+var ZeroPolynomial = Polynomial{}
+
+var OnePolynomial = Polynomial{
+	0: []Monomial{OneMonomial},
 }
 
-func NewPolynomial(monomPtrs []MonomialPtr) PolynomialPtr {
-	var ptr PolynomialPtr
-	poly := make(polynomial, len(monomPtrs))
+func NewPolynomial(monoms []Monomial) Polynomial {
+	p := make(Polynomial, len(monoms))
 
-	for _, mPtr := range monomPtrs {
-		if _, ok := poly[mPtr]; !ok {
-			poly[mPtr] = struct{}{}
-		} else {
-			delete(poly, mPtr)
-		}
-		ptr ^= mPtr
+	for _, m := range monoms {
+		p.toggleMonomial(m)
 	}
-	return safePolynomial(poly, ptr)
+	return p
 }
 
-func AddPolynomials(aPtr, bPtr PolynomialPtr) PolynomialPtr {
-	a, b := polynomialCache[aPtr], polynomialCache[bPtr]
+func randPolynomial(degree int, maxSub Subscript) Polynomial {
+	p := make(Polynomial, degree)
 
-	ptr := aPtr ^ bPtr
-	sum := make(polynomial, len(a)+len(b))
-
-	for maPtr := range maps.Keys(a) {
-		if _, ok := b[maPtr]; !ok {
-			sum[maPtr] = struct{}{}
-		}
+	for i := range degree {
+		m := randMonomial(degree-i, maxSub)
+		p.addMonomialUnsafe(m)
 	}
+	return p
+}
 
-	for mbPtr := range maps.Keys(b) {
-		if _, ok := a[mbPtr]; !ok {
-			sum[mbPtr] = struct{}{}
+func (a Polynomial) Add(b Polynomial) Polynomial {
+	pNew := make(Polynomial, len(a)+len(b))
+
+	for m := range a.Monomials() {
+		if !b.hasMonomial(m) {
+			pNew.addMonomialUnsafe(m)
 		}
 	}
-	return safePolynomial(sum, ptr)
-}
 
-func MulPolynomials(aPtr, bPtr PolynomialPtr) PolynomialPtr {
-	a, b := polynomialCache[aPtr], polynomialCache[bPtr]
-
-	var ptr PolynomialPtr
-	prod := make(polynomial, len(a)*len(b))
-
-	for maPtr := range maps.Keys(a) {
-		for mbPtr := range maps.Keys(b) {
-			mProdPtr := MulMonomials(maPtr, mbPtr)
-			ptr ^= mProdPtr
-
-			if _, ok := prod[mProdPtr]; !ok {
-				prod[mProdPtr] = struct{}{}
-			} else {
-				delete(prod, mProdPtr)
-			}
+	for m := range b.Monomials() {
+		if !a.hasMonomial(m) {
+			pNew.addMonomialUnsafe(m)
 		}
 	}
-	return safePolynomial(prod, ptr)
+	return pNew
 }
 
-func MonomialsOf(pPtr PolynomialPtr) iter.Seq[MonomialPtr] {
-	p := polynomialCache[pPtr]
-	return maps.Keys(p)
+func (a Polynomial) Mul(b Polynomial) Polynomial {
+	pNew := make(Polynomial, len(a)*len(b))
+
+	for ma := range a.Monomials() {
+		for mb := range b.Monomials() {
+			pNew.toggleMonomial(ma.Mul(mb))
+		}
+	}
+	return pNew
 }
 
-func evalPolynomial(pPtr PolynomialPtr, x []Element) Element {
-	p := polynomialCache[pPtr]
-
+func (p Polynomial) Eval(x []Element) Element {
 	var sum Element = 0
 
-	for m := range maps.Keys(p) {
-		sum = Add(sum, evalMonomial(m, x))
+	for m := range p.Monomials() {
+		sum = Add(sum, m.Eval(x))
 	}
 	return sum
 }
 
-func randPolynomial(degree int, maxSub Subscript) PolynomialPtr {
-	var ptr PolynomialPtr
-	poly := make(polynomial, degree)
-
-	for i := range degree {
-		mPtr := randMonomial(degree-i, maxSub)
-		poly[mPtr] = struct{}{}
-
-		ptr ^= mPtr
+func (p Polynomial) Monomials() iter.Seq[Monomial] {
+	return func(yield func(Monomial) bool) {
+		for _, bucket := range p {
+			for _, m := range bucket {
+				if !yield(m) {
+					return
+				}
+			}
+		}
 	}
-	return safePolynomial(poly, ptr)
 }
 
-func safePolynomial(candidate polynomial, suggestedPtr PolynomialPtr) PolynomialPtr {
-	other, ok := polynomialCache[suggestedPtr]
+func (p Polynomial) hasMonomial(m Monomial) bool {
+	bucket, ok := p[m.hash]
 
 	if !ok {
-		polynomialCache[suggestedPtr] = candidate
-		return suggestedPtr
-	}
-
-	if other.Equals(candidate) {
-		return suggestedPtr
-	}
-
-	newPtr := suggestedPtr
-	for {
-		newPtr++
-		if _, ok := polynomialCache[newPtr]; !ok {
-			polynomialCache[newPtr] = candidate
-			return newPtr
-		}
-
-		if newPtr == suggestedPtr {
-			panic("Polynomial cache is out of hash space")
-		}
-	}
-}
-
-func (p polynomial) Equals(other polynomial) bool {
-	if len(p) != len(other) {
 		return false
 	}
 
-	for mPtr := range p {
-		if _, ok := other[mPtr]; !ok {
-			return false
+	for _, bm := range bucket {
+		if m.Equals(bm) {
+			return true
 		}
 	}
-	return true
+	return false
+}
+
+func (p Polynomial) toggleMonomial(m Monomial) {
+	h := m.hash
+	bucket, ok := p[h]
+
+	if !ok {
+		p[h] = []Monomial{m}
+		return
+	}
+
+	for i, bm := range bucket {
+		if m.Equals(bm) {
+			last := len(bucket) - 1
+
+			if last == 0 {
+				delete(p, h)
+				return
+			}
+			bucket[i] = bucket[last]
+			p[h] = bucket[:last]
+			return
+		}
+	}
+	p[h] = append(bucket, m)
+}
+
+func (p Polynomial) addMonomialUnsafe(m Monomial) {
+	h := m.hash
+
+	if bucket, ok := p[h]; ok {
+		p[h] = append(bucket, m)
+	} else {
+		p[h] = []Monomial{m}
+	}
 }

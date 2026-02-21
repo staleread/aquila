@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-type PolynomialSet []PolynomialPtr
+type PolynomialSet []Polynomial
 
 func RandPolynomialSet(n, degree int, maxSub Subscript) PolynomialSet {
 	noise := make(PolynomialSet, n)
@@ -18,34 +18,48 @@ func RandPolynomialSet(n, degree int, maxSub Subscript) PolynomialSet {
 
 func (set PolynomialSet) Eval(dst, src []Element) {
 	for i := range len(dst) {
-		dst[i] = evalPolynomial(set[i], src)
+		dst[i] = set[i].Eval(src)
 	}
 }
 
 func (set PolynomialSet) Compose(other PolynomialSet) {
-	prodCache := make(map[MonomialPtr]PolynomialPtr)
+	// type cacheEntry struct {
+	// 	key   Monomial
+	// 	value Polynomial
+	// }
+	// prodCache := make(map[uint32][]cacheEntry)
+
+	// lookupCache := func(m Monomial) (Polynomial, bool) {
+	// 	for _, entry := range prodCache[m.hash] {
+	// 		if m.Equals(entry.key) {
+	// 			return entry.value, true
+	// 		}
+	// 	}
+	// 	return nil, false
+	// }
+
+	// storeCache := func(m Monomial, p Polynomial) {
+	// 	h := m.hash
+	// 	prodCache[h] = append(prodCache[h], cacheEntry{m, p})
+	// }
 
 	for j, p := range set {
-		sum := PolynomialPtr(0)
+		sum := ZeroPolynomial
 
-		for m := range MonomialsOf(p) {
-			if prod, ok := prodCache[m]; ok {
-				sum = AddPolynomials(sum, prod)
-				continue
+		for m := range p.Monomials() {
+			// if prod, ok := lookupCache(m); ok {
+			// 	sum = sum.Add(prod)
+			// 	continue
+			// }
+
+			prod := OnePolynomial
+
+			for s := range m.Syms() {
+				prod = prod.Mul(other[s])
 			}
-			prod := PolynomialPtr(0)
 
-			for s := range SubscriptsOf(m) {
-				nextPoly := other[s]
-
-				if prod == 0 {
-					prod = nextPoly
-					continue
-				}
-				prod = MulPolynomials(prod, nextPoly)
-			}
-			sum = AddPolynomials(sum, prod)
-			prodCache[m] = prod
+			sum = sum.Add(prod)
+			// storeCache(m, prod)
 		}
 		set[j] = sum
 	}
@@ -58,14 +72,14 @@ func (set PolynomialSet) String() string {
 		fmt.Fprintf(&sb, "y%d = ", i+1)
 
 		firstMonomial := true
-		for m := range MonomialsOf(p) {
+		for m := range p.Monomials() {
 			if !firstMonomial {
 				sb.WriteString(" + ")
 			}
 			firstMonomial = false
 
 			firstSubscript := true
-			for s := range SubscriptsOf(m) {
+			for s := range m.Syms() {
 				if !firstSubscript {
 					sb.WriteRune('*')
 				}
