@@ -1,14 +1,14 @@
 package invertible
 
 import (
-	"github.com/staleread/aquila/internal/automata/general"
+	"github.com/staleread/aquila/internal/canonical"
 	"github.com/staleread/aquila/internal/field"
 	"github.com/staleread/aquila/internal/linalg"
 )
 
 type fold struct {
 	lin   *linalg.SLE
-	noise field.PolynomialSet
+	noise field.Polyset
 }
 
 type rule struct {
@@ -17,14 +17,14 @@ type rule struct {
 	folds       []fold
 }
 
-func randRule(size, folds, degree int) *rule {
+func randRule(size, folds, degree int, arena *canonical.AllocationArena) *rule {
 	permutation := randPermutation(size)
 	n := size / folds
 	sFolds := make([]fold, folds)
 
 	sFolds[0] = fold{
 		lin:   linalg.RandSLE(n),
-		noise: make(field.PolynomialSet, n),
+		noise: make(field.Polyset, n),
 	}
 
 	for i := 1; i < folds; i++ {
@@ -32,7 +32,7 @@ func randRule(size, folds, degree int) *rule {
 
 		sFolds[i] = fold{
 			lin:   linalg.RandSLE(n),
-			noise: field.RandPolynomialSet(n, degree, maxSub),
+			noise: arena.RandPolyset(n, degree, maxSub),
 		}
 	}
 	return &rule{size, permutation, sFolds}
@@ -75,26 +75,26 @@ func (rule *rule) ApplyInverse(dst, src linalg.Vector) {
 	rule.permutation.permuteBack(dst)
 }
 
-func (rule *rule) general() general.Rule {
+func (rule *rule) toPolyset(arena *canonical.AllocationArena) field.Polyset {
 	n := rule.size / len(rule.folds)
 	ids := rule.permutation.ids()
-	polies := make([]field.Polynomial, 0, rule.size)
+	polyset := make(field.Polyset, rule.size)
 
 	for i, fl := range rule.folds {
 		lin := fl.lin.Coefs()
 		noise := fl.noise
 
 		for j, p := range noise {
-			monoms := make([]field.Monomial, 0, n)
+			poly := field.Polynomial{}
 
 			// Non-linear part
 			for m := range p.Monomials() {
 				subs := make([]field.Subscript, 0)
 
-				for s := range m.Syms() {
+				for s := range m.Subscripts() {
 					subs = append(subs, ids[s])
 				}
-				monoms = append(monoms, field.NewMonomial(subs...))
+				poly.ToggleMonomial(arena.CreateMonomial(subs...))
 			}
 
 			// Linear part
@@ -105,10 +105,10 @@ func (rule *rule) general() general.Rule {
 					continue
 				}
 				s := ids[n*i+k]
-				monoms = append(monoms, field.NewMonomial(s))
+				poly.ToggleMonomial(arena.CreateMonomial(s))
 			}
-			polies = append(polies, field.NewPolynomial(monoms))
+			polyset[n*i+j] = poly
 		}
 	}
-	return polies
+	return polyset
 }

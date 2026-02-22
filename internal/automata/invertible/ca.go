@@ -2,6 +2,7 @@ package invertible
 
 import (
 	"github.com/staleread/aquila/internal/automata/general"
+	"github.com/staleread/aquila/internal/canonical"
 	"github.com/staleread/aquila/internal/field"
 	"github.com/staleread/aquila/internal/linalg"
 )
@@ -10,17 +11,19 @@ type CA struct {
 	size  int
 	rules []*rule
 	tmp   linalg.Vector
+	arena *canonical.AllocationArena
 }
 
 func NewCA(size, folds, degree, rules int) *CA {
 	caRules := make([]*rule, rules)
+	arena := canonical.NewAllocationArena()
 
 	for i := range rules {
-		caRules[i] = randRule(size, folds, degree)
+		caRules[i] = randRule(size, folds, degree, arena)
 	}
 
 	tmp := linalg.ZeroVector(size)
-	return &CA{size, caRules, tmp}
+	return &CA{size, caRules, tmp, arena}
 }
 
 func (ca *CA) Apply(state []field.Element) {
@@ -68,10 +71,38 @@ func (ca *CA) ApplyInverse(state []field.Element) {
 
 func (ca *CA) General() *general.CA {
 	n := len(ca.rules)
-	rule := ca.rules[n-1].general()
+	result := ca.rules[n-1].toPolyset(ca.arena)
 
 	for i := n - 2; i >= 0; i-- {
-		rule.Compose(ca.rules[i].general())
+		target := ca.rules[i].toPolyset(ca.arena)
+		cmpArena := canonical.NewComputationArena()
+		prodCache := make(map[*field.Monomial]field.Polynomial)
+
+		for j, p := range result {
+			sum := field.Polynomial{}
+
+			for m := range p.Monomials() {
+				if cached, hit := prodCache[m]; hit {
+					sum.AddTo(cached)
+					continue
+				}
+
+				prod := make(field.Polynomial)
+				first := true
+
+				for s := range m.Subscripts() {
+					if first {
+						prod.AddTo(target[s])
+						first = false
+						continue
+					}
+					cmpArena.MulPolynomialBy(prod, target[s])
+				}
+				sum.AddTo(prod)
+				prodCache[m] = prod
+			}
+			result[j] = sum
+		}
 	}
-	return general.NewCA(ca.size, rule)
+	return general.NewCA(ca.size, result)
 }

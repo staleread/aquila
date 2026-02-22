@@ -1,20 +1,23 @@
 package field
 
 import (
+	"fmt"
 	"iter"
 	"maps"
+	"strings"
 )
 
+type MonomialHash = uint64
+type subscriptSet = map[Subscript]struct{}
+
 type Monomial struct {
-	data map[Subscript]struct{}
-	hash uint32
+	Hash MonomialHash
+	data subscriptSet
 }
 
-var OneMonomial = Monomial{data: nil, hash: 0}
-
 func NewMonomial(subs ...Subscript) Monomial {
-	var hash uint32
-	data := make(map[Subscript]struct{}, len(subs))
+	var hash MonomialHash
+	data := make(subscriptSet, len(subs))
 
 	for _, s := range subs {
 		if _, ok := data[s]; !ok {
@@ -22,16 +25,16 @@ func NewMonomial(subs ...Subscript) Monomial {
 			hash ^= hashSubscript(s)
 		}
 	}
-	return Monomial{data, hash}
+	return Monomial{hash, data}
 }
 
-func randMonomial(degree int, maxSub Subscript) Monomial {
+func RandMonomial(degree int, maxSub Subscript) Monomial {
 	if Subscript(degree) > maxSub {
 		panic("Monomial degree exceeds subscript range")
 	}
 
-	var hash uint32
-	data := make(map[Subscript]struct{}, degree)
+	var hash MonomialHash
+	data := make(subscriptSet, degree)
 
 	rands := RandSubscripts(degree)
 	randUp := maxSub - Subscript(degree)
@@ -45,12 +48,23 @@ func randMonomial(degree int, maxSub Subscript) Monomial {
 		data[s] = struct{}{}
 		hash ^= hashSubscript(s)
 	}
-	return Monomial{data, hash}
+	return Monomial{hash, data}
+}
+
+func hashSubscript(s Subscript) MonomialHash {
+	x := MonomialHash(s + 1)
+	x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9
+	x = (x ^ (x >> 27)) * 0x94d049bb133111eb
+	return x ^ (x >> 31)
+}
+
+func (monom Monomial) Subscripts() iter.Seq[Subscript] {
+	return maps.Keys(monom.data)
 }
 
 func (a Monomial) Mul(b Monomial) Monomial {
-	data := make(map[Subscript]struct{}, max(len(a.data), len(b.data)))
-	hash := a.hash ^ b.hash
+	hash := a.Hash ^ b.Hash
+	data := make(subscriptSet, max(len(a.data), len(b.data)))
 
 	for s := range a.data {
 		data[s] = struct{}{}
@@ -60,21 +74,19 @@ func (a Monomial) Mul(b Monomial) Monomial {
 		if _, ok := a.data[s]; !ok {
 			data[s] = struct{}{}
 		} else {
-			// x*x = x in GF(2), so cancel from hash and omit from data
+			// x_i^2 = x_i in GF(2): duplicate subscript is already in data,
+			// un-XOR its hash contribution since it was counted once in a.Hash
+			// and once in b.Hash but should only appear once in the product.
 			hash ^= hashSubscript(s)
 		}
 	}
-	return Monomial{data, hash}
+	return Monomial{hash, data}
 }
 
-func (m Monomial) Syms() iter.Seq[Subscript] {
-	return maps.Keys(m.data)
-}
-
-func (m Monomial) Eval(x []Element) Element {
+func (monom Monomial) Eval(x []Element) Element {
 	var prod Element = 1
 
-	for s := range m.data {
+	for s := range monom.data {
 		prod = Mul(prod, x[s])
 	}
 	return prod
@@ -93,13 +105,21 @@ func (a Monomial) Equals(b Monomial) bool {
 	return true
 }
 
-// https://stackoverflow.com/a/12996028
-func hashSubscript(s Subscript) uint32 {
-	x := uint32(s)
+func (monom Monomial) String() string {
+	sb := strings.Builder{}
 
-	x = ((x >> 16) ^ x) * 0x45d9f3b
-	x = ((x >> 16) ^ x) * 0x45d9f3b
-	x = (x >> 16) ^ x
+	sb.WriteByte('{')
 
-	return x
+	isFirstSub := true
+	for s := range monom.Subscripts() {
+		if !isFirstSub {
+			sb.WriteString(", ")
+		}
+		isFirstSub = false
+
+		fmt.Fprintf(&sb, "%d", s)
+	}
+	sb.WriteByte('}')
+
+	return sb.String()
 }

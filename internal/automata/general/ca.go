@@ -2,7 +2,7 @@ package general
 
 import "github.com/staleread/aquila/internal/field"
 
-type Rule = field.PolynomialSet
+type Rule = field.Polyset
 
 type CA struct {
 	size int

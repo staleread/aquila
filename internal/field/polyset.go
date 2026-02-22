@@ -5,41 +5,15 @@ import (
 	"strings"
 )
 
-type PolynomialSet []Polynomial
+type Polyset []Polynomial
 
-func RandPolynomialSet(n, degree int, maxSub Subscript) PolynomialSet {
-	noise := make(PolynomialSet, n)
-
-	for i := range n {
-		noise[i] = randPolynomial(degree, maxSub)
-	}
-	return noise
-}
-
-func (set PolynomialSet) Eval(dst, src []Element) {
+func (set Polyset) Eval(dst, src []Element) {
 	for i := range len(dst) {
 		dst[i] = set[i].Eval(src)
 	}
 }
 
-func (set PolynomialSet) Compose(other PolynomialSet) {
-	for j, p := range set {
-		sum := ZeroPolynomial
-
-		for m := range p.Monomials() {
-			prod := OnePolynomial
-
-			for s := range m.Syms() {
-				prod = prod.Mul(other[s])
-			}
-
-			sum = sum.Add(prod)
-		}
-		set[j] = sum
-	}
-}
-
-func (set PolynomialSet) String() string {
+func (set Polyset) String() string {
 	sb := strings.Builder{}
 
 	for i, p := range set {
@@ -53,12 +27,12 @@ func (set PolynomialSet) String() string {
 			firstMonomial = false
 
 			firstSubscript := true
-			for s := range m.Syms() {
+			for s := range m.Subscripts() {
 				if !firstSubscript {
 					sb.WriteRune('*')
 				}
-
 				firstSubscript = false
+
 				fmt.Fprintf(&sb, "x%d", s+1)
 			}
 		}
