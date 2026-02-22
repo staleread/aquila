@@ -1,7 +1,7 @@
 package invertible
 
 import (
-	"github.com/staleread/aquila/internal/ca/general"
+	"github.com/staleread/aquila/internal/automata/general"
 	"github.com/staleread/aquila/internal/field"
 	"github.com/staleread/aquila/internal/linalg"
 )

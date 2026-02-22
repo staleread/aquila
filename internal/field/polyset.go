@@ -23,35 +23,10 @@ func (set PolynomialSet) Eval(dst, src []Element) {
 }
 
 func (set PolynomialSet) Compose(other PolynomialSet) {
-	// type cacheEntry struct {
-	// 	key   Monomial
-	// 	value Polynomial
-	// }
-	// prodCache := make(map[uint32][]cacheEntry)
-
-	// lookupCache := func(m Monomial) (Polynomial, bool) {
-	// 	for _, entry := range prodCache[m.hash] {
-	// 		if m.Equals(entry.key) {
-	// 			return entry.value, true
-	// 		}
-	// 	}
-	// 	return nil, false
-	// }
-
-	// storeCache := func(m Monomial, p Polynomial) {
-	// 	h := m.hash
-	// 	prodCache[h] = append(prodCache[h], cacheEntry{m, p})
-	// }
-
 	for j, p := range set {
 		sum := ZeroPolynomial
 
 		for m := range p.Monomials() {
-			// if prod, ok := lookupCache(m); ok {
-			// 	sum = sum.Add(prod)
-			// 	continue
-			// }
-
 			prod := OnePolynomial
 
 			for s := range m.Syms() {
@@ -59,7 +34,6 @@ func (set PolynomialSet) Compose(other PolynomialSet) {
 			}
 
 			sum = sum.Add(prod)
-			// storeCache(m, prod)
 		}
 		set[j] = sum
 	}

@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"github.com/staleread/aquila/internal/ca/invertible"
+	"github.com/staleread/aquila/internal/automata/invertible"
 	"github.com/staleread/aquila/internal/field"
 )
 
