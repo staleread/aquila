@@ -7,15 +7,6 @@ import (
 
 type Polynomial map[*Monomial]struct{}
 
-// func NewPolynomial(monoms []Monomial) Polynomial {
-// 	p := make(Polynomial, len(monoms))
-
-// 	for _, m := range monoms {
-// 		p.ToggleMonomial(&m)
-// 	}
-// 	return p
-// }
-
 func (p Polynomial) Monomials() iter.Seq[*Monomial] {
 	return maps.Keys(p)
 }
