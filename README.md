@@ -8,7 +8,7 @@ Cryptosystem"](https://www.complex-systems.com/abstracts/v01_i01_a04/) paper.
 
 - [ ] Implement public/private key serialization/parsing
 - [ ] Implement plain text padding
-- [ ] Hash consing for symbolic math to reduce memory usage
+- [x] Hash consing for symbolic math to reduce memory usage
 
 ## How it works?
 
