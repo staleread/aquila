@@ -1,21 +1,22 @@
-package field
+package sparse
 
 import (
 	"fmt"
+	"github.com/staleread/aquila/internal/poly"
 	"iter"
 	"maps"
 	"strings"
 )
 
 type MonomialHash = uint64
-type subscriptSet = map[Subscript]struct{}
+type subscriptSet = map[poly.Subscript]struct{}
 
 type Monomial struct {
 	Hash MonomialHash
 	data subscriptSet
 }
 
-func NewMonomial(subs ...Subscript) Monomial {
+func NewMonomial(subs ...poly.Subscript) Monomial {
 	var hash MonomialHash
 	data := make(subscriptSet, len(subs))
 
@@ -28,37 +29,14 @@ func NewMonomial(subs ...Subscript) Monomial {
 	return Monomial{hash, data}
 }
 
-func RandMonomial(degree int, maxSub Subscript) Monomial {
-	if Subscript(degree) > maxSub {
-		panic("Monomial degree exceeds subscript range")
-	}
-
-	var hash MonomialHash
-	data := make(subscriptSet, degree)
-
-	rands := RandSubscripts(degree)
-	randUp := maxSub - Subscript(degree)
-
-	for i := range Subscript(degree) {
-		s := rands[i] % (randUp + i + 1)
-
-		if _, ok := data[s]; ok {
-			s = randUp + i
-		}
-		data[s] = struct{}{}
-		hash ^= hashSubscript(s)
-	}
-	return Monomial{hash, data}
-}
-
-func hashSubscript(s Subscript) MonomialHash {
+func hashSubscript(s poly.Subscript) MonomialHash {
 	x := MonomialHash(s + 1)
 	x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9
 	x = (x ^ (x >> 27)) * 0x94d049bb133111eb
 	return x ^ (x >> 31)
 }
 
-func (monom Monomial) Subscripts() iter.Seq[Subscript] {
+func (monom Monomial) Subscripts() iter.Seq[poly.Subscript] {
 	return maps.Keys(monom.data)
 }
 
@@ -81,15 +59,6 @@ func (a Monomial) Mul(b Monomial) Monomial {
 		}
 	}
 	return Monomial{hash, data}
-}
-
-func (monom Monomial) Eval(x []Element) Element {
-	var prod Element = 1
-
-	for s := range monom.data {
-		prod = Mul(prod, x[s])
-	}
-	return prod
 }
 
 func (a Monomial) Equals(b Monomial) bool {

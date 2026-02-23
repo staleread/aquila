@@ -2,28 +2,29 @@ package invertible
 
 import (
 	"github.com/staleread/aquila/internal/automata/general"
-	"github.com/staleread/aquila/internal/canonical"
 	"github.com/staleread/aquila/internal/field"
 	"github.com/staleread/aquila/internal/linalg"
+	"github.com/staleread/aquila/internal/poly/sparse"
 )
 
 type CA struct {
-	size  int
-	rules []*rule
-	tmp   linalg.Vector
-	arena *canonical.AllocationArena
+	size      int
+	rules     []*rule
+	tmpState  linalg.Vector
+	allocPool *sparse.MonomialInternPool
 }
 
 func NewCA(size, folds, degree, rules int) *CA {
 	caRules := make([]*rule, rules)
-	arena := canonical.NewAllocationArena()
 
 	for i := range rules {
-		caRules[i] = randRule(size, folds, degree, arena)
+		caRules[i] = randRule(size, folds, degree)
 	}
 
-	tmp := linalg.ZeroVector(size)
-	return &CA{size, caRules, tmp, arena}
+	tmpState := linalg.ZeroVector(size)
+	allocPool := sparse.NewMonomialInternPool()
+
+	return &CA{size, caRules, tmpState, allocPool}
 }
 
 func (ca *CA) Apply(state []field.Element) {
@@ -35,14 +36,14 @@ func (ca *CA) Apply(state []field.Element) {
 
 	for i, r := range ca.rules {
 		if i%2 == 0 {
-			r.Apply(ca.tmp, sv)
+			r.Apply(ca.tmpState, sv)
 		} else {
-			r.Apply(sv, ca.tmp)
+			r.Apply(sv, ca.tmpState)
 		}
 	}
 
 	if len(ca.rules)%2 == 1 {
-		copy(sv, ca.tmp)
+		copy(sv, ca.tmpState)
 	}
 }
 
@@ -58,28 +59,29 @@ func (ca *CA) ApplyInverse(state []field.Element) {
 		r := ca.rules[i]
 
 		if i%2 == lastParity {
-			r.ApplyInverse(ca.tmp, sv)
+			r.ApplyInverse(ca.tmpState, sv)
 		} else {
-			r.ApplyInverse(sv, ca.tmp)
+			r.ApplyInverse(sv, ca.tmpState)
 		}
 	}
 
 	if lastParity == 0 {
-		copy(sv, ca.tmp)
+		copy(sv, ca.tmpState)
 	}
 }
 
-func (ca *CA) General() *general.CA {
+func (ca *CA) ToGeneral() *general.CA {
 	n := len(ca.rules)
-	result := ca.rules[n-1].toPolyset(ca.arena)
+	rule := ca.rules[n-1].toSparsePolyset(ca.allocPool)
 
 	for i := n - 2; i >= 0; i-- {
-		target := ca.rules[i].toPolyset(ca.arena)
-		cmpArena := canonical.NewComputationArena()
-		prodCache := make(map[*field.Monomial]field.Polynomial)
+		target := ca.rules[i].toSparsePolyset(ca.allocPool)
 
-		for j, p := range result {
-			sum := field.Polynomial{}
+		prodCache := make(map[*sparse.Monomial]sparse.Polynomial)
+		cmpPool := sparse.NewMonomialInternPool()
+
+		for j, p := range rule {
+			sum := sparse.Polynomial{}
 
 			for m := range p.Monomials() {
 				if cached, hit := prodCache[m]; hit {
@@ -87,7 +89,7 @@ func (ca *CA) General() *general.CA {
 					continue
 				}
 
-				prod := make(field.Polynomial)
+				prod := make(sparse.Polynomial)
 				first := true
 
 				for s := range m.Subscripts() {
@@ -96,13 +98,13 @@ func (ca *CA) General() *general.CA {
 						first = false
 						continue
 					}
-					cmpArena.MulPolynomialBy(prod, target[s])
+					cmpPool.MulPolynomialBy(prod, target[s])
 				}
 				sum.AddTo(prod)
 				prodCache[m] = prod
 			}
-			result[j] = sum
+			rule[j] = sum
 		}
 	}
-	return general.NewCA(ca.size, result)
+	return general.NewCA(ca.size, rule.Compile())
 }

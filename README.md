@@ -7,7 +7,7 @@ Cryptosystem"](https://www.complex-systems.com/abstracts/v01_i01_a04/) paper.
 ## Roadmap
 
 - [x] Hash consing for symbolic math to reduce memory usage
-- [ ] Different key data structure for fast evaluation (slice instead of set)
+- [x] Different key data structure for fast evaluation (slice instead of set)
 - [ ] Implement public/private key serialization/parsing
 - [ ] Implement plain text padding
 

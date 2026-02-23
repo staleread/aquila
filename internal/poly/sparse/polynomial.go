@@ -1,4 +1,4 @@
-package field
+package sparse
 
 import (
 	"iter"
@@ -7,17 +7,8 @@ import (
 
 type Polynomial map[*Monomial]struct{}
 
-func (p Polynomial) Monomials() iter.Seq[*Monomial] {
-	return maps.Keys(p)
-}
-
-func (p Polynomial) Eval(x []Element) Element {
-	var sum Element = 0
-
-	for m := range p.Monomials() {
-		sum = Add(sum, m.Eval(x))
-	}
-	return sum
+func (poly Polynomial) Monomials() iter.Seq[*Monomial] {
+	return maps.Keys(poly)
 }
 
 func (a Polynomial) AddTo(b Polynomial) {

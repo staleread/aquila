@@ -1,14 +1,15 @@
 package invertible
 
 import (
-	"github.com/staleread/aquila/internal/canonical"
-	"github.com/staleread/aquila/internal/field"
 	"github.com/staleread/aquila/internal/linalg"
+	"github.com/staleread/aquila/internal/poly"
+	"github.com/staleread/aquila/internal/poly/compiled"
+	"github.com/staleread/aquila/internal/poly/sparse"
 )
 
 type fold struct {
 	lin   *linalg.SLE
-	noise field.Polyset
+	noise *compiled.Polyset
 }
 
 type rule struct {
@@ -17,22 +18,22 @@ type rule struct {
 	folds       []fold
 }
 
-func randRule(size, folds, degree int, arena *canonical.AllocationArena) *rule {
+func randRule(size, folds, degree int) *rule {
 	permutation := randPermutation(size)
 	n := size / folds
 	sFolds := make([]fold, folds)
 
 	sFolds[0] = fold{
 		lin:   linalg.RandSLE(n),
-		noise: make(field.Polyset, n),
+		noise: compiled.EmptyPolyset(),
 	}
 
 	for i := 1; i < folds; i++ {
-		maxSub := field.Subscript(n * i)
+		maxSub := poly.Subscript(n * i)
 
 		sFolds[i] = fold{
 			lin:   linalg.RandSLE(n),
-			noise: arena.RandPolyset(n, degree, maxSub),
+			noise: compiled.RandPolyset(n, degree, maxSub),
 		}
 	}
 	return &rule{size, permutation, sFolds}
@@ -75,27 +76,18 @@ func (rule *rule) ApplyInverse(dst, src linalg.Vector) {
 	rule.permutation.permuteBack(dst)
 }
 
-func (rule *rule) toPolyset(arena *canonical.AllocationArena) field.Polyset {
+func (rule *rule) toSparsePolyset(pool *sparse.MonomialInternPool) sparse.Polyset {
 	n := rule.size / len(rule.folds)
+	polyset := make(sparse.Polyset, rule.size)
+
 	ids := rule.permutation.ids()
-	polyset := make(field.Polyset, rule.size)
 
 	for i, fl := range rule.folds {
 		lin := fl.lin.Coefs()
 		noise := fl.noise
 
-		for j, p := range noise {
-			poly := field.Polynomial{}
-
-			// Non-linear part
-			for m := range p.Monomials() {
-				subs := make([]field.Subscript, 0)
-
-				for s := range m.Subscripts() {
-					subs = append(subs, ids[s])
-				}
-				poly.ToggleMonomial(arena.CreateMonomial(subs...))
-			}
+		for j := range n {
+			p := sparse.Polynomial{}
 
 			// Linear part
 			for k := range n {
@@ -104,10 +96,28 @@ func (rule *rule) toPolyset(arena *canonical.AllocationArena) field.Polyset {
 				if val == 0 {
 					continue
 				}
-				s := ids[n*i+k]
-				poly.ToggleMonomial(arena.CreateMonomial(s))
+				sub := ids[n*i+k]
+				p.ToggleMonomial(pool.CreateMonomial(sub))
 			}
-			polyset[n*i+j] = poly
+
+			// Non-linear part
+			if noise.PolyCount > 0 {
+				pStart := noise.PolyOffsets[j]
+				pEnd := noise.PolyOffsets[j+1]
+
+				for k := pStart; k < pEnd; k++ {
+					mStart := noise.MonomOffsets[k]
+					mEnd := noise.MonomOffsets[k+1]
+
+					subs := make([]poly.Subscript, mEnd-mStart)
+					for l, s := range noise.Subscripts[mStart:mEnd] {
+						subs[l] = ids[s]
+					}
+					p.ToggleMonomial(pool.CreateMonomial(subs...))
+				}
+			}
+
+			polyset[n*i+j] = p
 		}
 	}
 	return polyset

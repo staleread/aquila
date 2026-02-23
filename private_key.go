@@ -72,6 +72,6 @@ func (k *PrivateKey) Decrypt(dst, src []byte) {
 }
 
 func (k *PrivateKey) Public() *PublicKey {
-	ca := k.ca.General()
+	ca := k.ca.ToGeneral()
 	return &PublicKey{k.blockSize, ca}
 }

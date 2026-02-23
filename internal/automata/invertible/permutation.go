@@ -1,12 +1,15 @@
 package invertible
 
-import "github.com/staleread/aquila/internal/field"
+import (
+	"github.com/staleread/aquila/internal/field"
+	"github.com/staleread/aquila/internal/poly"
+)
 
 type permutation []int
 
 func randPermutation(n int) permutation {
 	p := make(permutation, n-1)
-	rands := field.RandSubscripts(n - 1)
+	rands := poly.RandSubscripts(n - 1)
 
 	// Fisher–Yates shuffle
 	for i := range n - 1 {
@@ -36,11 +39,11 @@ func (p permutation) permuteBack(v []field.Element) {
 	}
 }
 
-func (p permutation) ids() []field.Subscript {
+func (p permutation) ids() []poly.Subscript {
 	n := len(p) + 1
-	ids := make([]field.Subscript, n)
+	ids := make([]poly.Subscript, n)
 
-	for i := range field.Subscript(n) {
+	for i := range poly.Subscript(n) {
 		ids[i] = i
 	}
 
