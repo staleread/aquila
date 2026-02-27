@@ -11,7 +11,6 @@ type CA struct {
 	size      int
 	rules     []*rule
 	tmpState  linalg.Vector
-	allocPool *sparse.MonomialInternPool
 }
 
 func NewCA(size, folds, degree, rules int) *CA {
@@ -22,9 +21,8 @@ func NewCA(size, folds, degree, rules int) *CA {
 	}
 
 	tmpState := linalg.ZeroVector(size)
-	allocPool := sparse.NewMonomialInternPool()
 
-	return &CA{size, caRules, tmpState, allocPool}
+	return &CA{size, caRules, tmpState}
 }
 
 func (ca *CA) Apply(state []field.Element) {
@@ -72,10 +70,12 @@ func (ca *CA) ApplyInverse(state []field.Element) {
 
 func (ca *CA) ToGeneral() *general.CA {
 	n := len(ca.rules)
-	rule := ca.rules[n-1].toSparsePolyset(ca.allocPool)
+
+	allocPool := sparse.NewMonomialInternPool()
+	rule := ca.rules[n-1].toSparsePolyset(allocPool)
 
 	for i := n - 2; i >= 0; i-- {
-		target := ca.rules[i].toSparsePolyset(ca.allocPool)
+		target := ca.rules[i].toSparsePolyset(allocPool)
 
 		prodCache := make(map[*sparse.Monomial]sparse.Polynomial)
 		cmpPool := sparse.NewMonomialInternPool()
