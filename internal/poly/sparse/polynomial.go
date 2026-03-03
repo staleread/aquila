@@ -17,10 +17,10 @@ func (a Polynomial) AddTo(b Polynomial) {
 	}
 }
 
-func (poly Polynomial) ToggleMonomial(mPtr *Monomial) {
-	if _, ok := poly[mPtr]; ok {
-		delete(poly, mPtr)
+func (poly Polynomial) ToggleMonomial(monom *Monomial) {
+	if _, ok := poly[monom]; ok {
+		delete(poly, monom)
 	} else {
-		poly[mPtr] = struct{}{}
+		poly[monom] = struct{}{}
 	}
 }

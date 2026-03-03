@@ -5,21 +5,21 @@ import (
 	"github.com/staleread/aquila/internal/poly"
 )
 
-type MonomialInternPool struct {
+type monomialInternPool struct {
 	monomCache map[MonomialHash]*Monomial
 }
 
-func NewMonomialInternPool() *MonomialInternPool {
+func newMonomialInternPool() *monomialInternPool {
 	cache := make(map[MonomialHash]*Monomial)
-	return &MonomialInternPool{cache}
+	return &monomialInternPool{cache}
 }
 
-func (pool *MonomialInternPool) CreateMonomial(subs ...poly.Subscript) *Monomial {
+func (pool *monomialInternPool) createMonomial(subs ...poly.Subscript) *Monomial {
 	m := NewMonomial(subs...)
 	return pool.getOrInsertMonomial(m)
 }
 
-func (pool *MonomialInternPool) MulPolynomialBy(a, b Polynomial) {
+func (pool *monomialInternPool) mulPolynomialBy(a, b Polynomial) {
 	aMonoms := make([]*Monomial, 0, len(a))
 	for ma := range a.Monomials() {
 		aMonoms = append(aMonoms, ma)
@@ -35,7 +35,7 @@ func (pool *MonomialInternPool) MulPolynomialBy(a, b Polynomial) {
 	}
 }
 
-func (pool *MonomialInternPool) getOrInsertMonomial(m Monomial) *Monomial {
+func (pool *monomialInternPool) getOrInsertMonomial(m Monomial) *Monomial {
 	hash := m.Hash
 	cached, cacheHit := pool.monomCache[hash]
 

@@ -7,11 +7,11 @@ import (
 
 type CA struct {
 	size int
-	rule compiled.Polyset
+	rule *compiled.Polyset
 	tmp  []field.Element
 }
 
-func NewCA(size int, rule compiled.Polyset) *CA {
+func NewCA(size int, rule *compiled.Polyset) *CA {
 	tmp := make([]field.Element, size)
 	return &CA{size, rule, tmp}
 }

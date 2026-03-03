@@ -4,13 +4,12 @@ import (
 	"github.com/staleread/aquila/internal/automata/general"
 	"github.com/staleread/aquila/internal/field"
 	"github.com/staleread/aquila/internal/linalg"
-	"github.com/staleread/aquila/internal/poly/sparse"
 )
 
 type CA struct {
-	size      int
-	rules     []*rule
-	tmpState  linalg.Vector
+	size     int
+	rules    []*rule
+	tmpState linalg.Vector
 }
 
 func NewCA(size, folds, degree, rules int) *CA {
@@ -70,41 +69,10 @@ func (ca *CA) ApplyInverse(state []field.Element) {
 
 func (ca *CA) ToGeneral() *general.CA {
 	n := len(ca.rules)
-
-	allocPool := sparse.NewMonomialInternPool()
-	rule := ca.rules[n-1].toSparsePolyset(allocPool)
+	rule := ca.rules[n-1].toSparsePolyset()
 
 	for i := n - 2; i >= 0; i-- {
-		target := ca.rules[i].toSparsePolyset(allocPool)
-
-		prodCache := make(map[*sparse.Monomial]sparse.Polynomial)
-		cmpPool := sparse.NewMonomialInternPool()
-
-		for j, p := range rule {
-			sum := sparse.Polynomial{}
-
-			for m := range p.Monomials() {
-				if cached, hit := prodCache[m]; hit {
-					sum.AddTo(cached)
-					continue
-				}
-
-				prod := make(sparse.Polynomial)
-				first := true
-
-				for s := range m.Subscripts() {
-					if first {
-						prod.AddTo(target[s])
-						first = false
-						continue
-					}
-					cmpPool.MulPolynomialBy(prod, target[s])
-				}
-				sum.AddTo(prod)
-				prodCache[m] = prod
-			}
-			rule[j] = sum
-		}
+		rule.ComposeWith(ca.rules[i].toSparsePolyset())
 	}
 	return general.NewCA(ca.size, rule.Compile())
 }

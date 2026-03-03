@@ -76,9 +76,9 @@ func (rule *rule) ApplyInverse(dst, src linalg.Vector) {
 	rule.permutation.permuteBack(dst)
 }
 
-func (rule *rule) toSparsePolyset(pool *sparse.MonomialInternPool) sparse.Polyset {
+func (rule *rule) toSparsePolyset() *sparse.Polyset {
 	n := rule.size / len(rule.folds)
-	polyset := make(sparse.Polyset, rule.size)
+	builder := sparse.NewPolysetBuilder(rule.size)
 
 	ids := rule.permutation.ids()
 
@@ -87,7 +87,7 @@ func (rule *rule) toSparsePolyset(pool *sparse.MonomialInternPool) sparse.Polyse
 		noise := fl.noise
 
 		for j := range n {
-			p := sparse.Polynomial{}
+			polynomIdx := n*i + j
 
 			// Linear part
 			for k := range n {
@@ -97,7 +97,7 @@ func (rule *rule) toSparsePolyset(pool *sparse.MonomialInternPool) sparse.Polyse
 					continue
 				}
 				sub := ids[n*i+k]
-				p.ToggleMonomial(pool.CreateMonomial(sub))
+				builder.AddMonomOf(polynomIdx, sub)
 			}
 
 			// Non-linear part
@@ -113,12 +113,10 @@ func (rule *rule) toSparsePolyset(pool *sparse.MonomialInternPool) sparse.Polyse
 					for l, s := range noise.Subscripts[mStart:mEnd] {
 						subs[l] = ids[s]
 					}
-					p.ToggleMonomial(pool.CreateMonomial(subs...))
+					builder.AddMonomOf(polynomIdx, subs...)
 				}
 			}
-
-			polyset[n*i+j] = p
 		}
 	}
-	return polyset
+	return builder.Build()
 }
