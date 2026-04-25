@@ -72,29 +72,29 @@ func RandPolyset(n, degree int, maxSub poly.Subscript) *Polyset {
 	}
 }
 
-func (set *Polyset) Eval(dst, src []field.Element) {
-	if set.PolyCount == 0 {
+func (self *Polyset) Eval(dst, src []field.Element) {
+	if self.PolyCount == 0 {
 		copy(dst, src)
 		return
 	}
-	if set.PolyCount != len(dst) {
+	if self.PolyCount != len(dst) {
 		panic("Element array does not match polyset size")
 	}
 
-	for i := range set.PolyCount {
+	for i := range self.PolyCount {
 		var sum field.Element
 
-		pStart := set.PolyOffsets[i]
-		pEnd := set.PolyOffsets[i+1]
+		pStart := self.PolyOffsets[i]
+		pEnd := self.PolyOffsets[i+1]
 
 		for j := pStart; j < pEnd; j++ {
 			prod := field.Element(1)
 
-			mStart := set.MonomOffsets[j]
-			mEnd := set.MonomOffsets[j+1]
+			mStart := self.MonomOffsets[j]
+			mEnd := self.MonomOffsets[j+1]
 
 			for k := mStart; k < mEnd; k++ {
-				val := src[set.Subscripts[k]]
+				val := src[self.Subscripts[k]]
 				prod = field.Mul(prod, val)
 			}
 			sum = field.Add(sum, prod)

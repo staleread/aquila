@@ -18,36 +18,36 @@ func randPermutation(n int) permutation {
 	return p
 }
 
-func (p permutation) permute(v []field.Element) {
-	if len(v) != len(p)+1 {
+func (self permutation) permute(v []field.Element) {
+	if len(v) != len(self)+1 {
 		panic("Array size doesn't match the permutation size")
 	}
 
-	for i, j := range p {
+	for i, j := range self {
 		v[i], v[j] = v[j], v[i]
 	}
 }
 
-func (p permutation) permuteBack(v []field.Element) {
-	if len(v) != len(p)+1 {
+func (self permutation) permuteBack(v []field.Element) {
+	if len(v) != len(self)+1 {
 		panic("Array size doesn't match the permutation size")
 	}
 
-	for i := len(p) - 1; i >= 0; i-- {
-		j := p[i]
+	for i := len(self) - 1; i >= 0; i-- {
+		j := self[i]
 		v[i], v[j] = v[j], v[i]
 	}
 }
 
-func (p permutation) ids() []poly.Subscript {
-	n := len(p) + 1
+func (self permutation) ids() []poly.Subscript {
+	n := len(self) + 1
 	ids := make([]poly.Subscript, n)
 
 	for i := range poly.Subscript(n) {
 		ids[i] = i
 	}
 
-	for i, j := range p {
+	for i, j := range self {
 		ids[i], ids[j] = ids[j], ids[i]
 	}
 	return ids

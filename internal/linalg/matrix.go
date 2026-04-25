@@ -14,8 +14,8 @@ func zeroSquareMatrix(n int) *SquareMatrix {
 	}
 }
 
-func (sq *SquareMatrix) At(i, j int) field.Element {
-	return sq.data[sq.n*i+j]
+func (self *SquareMatrix) At(i, j int) field.Element {
+	return self.data[self.n*i+j]
 }
 
 type lowerTriangularMatrix struct {
@@ -42,14 +42,14 @@ func randInvertibleLowerTriangularMatrix(n int) *lowerTriangularMatrix {
 
 // Diagonal elements of the matrix must be non-zero.
 // The result is written to x. It's safe for x and b to point to the same vector.
-func (lt *lowerTriangularMatrix) substituteForward(x, b Vector) {
-	for i := range lt.n {
+func (self *lowerTriangularMatrix) substituteForward(x, b Vector) {
+	for i := range self.n {
 		num := b[i]
 
 		for j := range i {
-			num = field.Sub(num, field.Mul(lt.At(i, j), x[j]))
+			num = field.Sub(num, field.Mul(self.At(i, j), x[j]))
 		}
-		x[i] = field.Div(num, lt.At(i, i))
+		x[i] = field.Div(num, self.At(i, i))
 	}
 }
 
@@ -77,15 +77,15 @@ func randInvertibleUpperTriangularMatrix(n int) *upperTriangularMatrix {
 
 // Diagonal elements of the matrix of must be non-zero.
 // The result is written to x. It's safe for x and b to point to the same vector.
-func (ut *upperTriangularMatrix) substituteBackward(x, b Vector) {
-	n := ut.n
+func (self *upperTriangularMatrix) substituteBackward(x, b Vector) {
+	n := self.n
 
 	for i := n - 1; i >= 0; i-- {
 		num := b[i]
 
 		for j := i + 1; j < n; j++ {
-			num = field.Sub(num, field.Mul(ut.At(i, j), x[j]))
+			num = field.Sub(num, field.Mul(self.At(i, j), x[j]))
 		}
-		x[i] = field.Div(num, ut.At(i, i))
+		x[i] = field.Div(num, self.At(i, i))
 	}
 }

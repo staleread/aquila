@@ -16,11 +16,11 @@ func NewCA(size int, rule *compiled.Polyset) *CA {
 	return &CA{size, rule, tmp}
 }
 
-func (ca *CA) Apply(state []field.Element) {
-	if len(state) != ca.size {
+func (self *CA) Apply(state []field.Element) {
+	if len(state) != self.size {
 		panic("Invalid CA state size")
 	}
 
-	copy(ca.tmp, state)
-	ca.rule.Eval(state, ca.tmp)
+	copy(self.tmp, state)
+	self.rule.Eval(state, self.tmp)
 }

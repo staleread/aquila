@@ -39,12 +39,12 @@ func randRule(size, folds, degree int) *rule {
 	return &rule{size, permutation, sFolds}
 }
 
-func (rule *rule) Apply(dst, src linalg.Vector) {
-	n := rule.size / len(rule.folds)
+func (self *rule) Apply(dst, src linalg.Vector) {
+	n := self.size / len(self.folds)
 
-	rule.permutation.permute(src)
+	self.permutation.permute(src)
 
-	for i, fl := range rule.folds {
+	for i, fl := range self.folds {
 		xCurr := src[n*i : n*i+n]
 		bCurr := dst[n*i : n*i+n]
 
@@ -58,10 +58,10 @@ func (rule *rule) Apply(dst, src linalg.Vector) {
 	}
 }
 
-func (rule *rule) ApplyInverse(dst, src linalg.Vector) {
-	n := rule.size / len(rule.folds)
+func (self *rule) ApplyInverse(dst, src linalg.Vector) {
+	n := self.size / len(self.folds)
 
-	for i, fl := range rule.folds {
+	for i, fl := range self.folds {
 		noise := linalg.ZeroVector(n)
 		xPrev := dst[:n*i]
 		bCurr := src[n*i : n*i+n]
@@ -73,16 +73,21 @@ func (rule *rule) ApplyInverse(dst, src linalg.Vector) {
 
 		fl.lin.Solve(xCurr, bCurr)
 	}
-	rule.permutation.permuteBack(dst)
+	self.permutation.permuteBack(dst)
 }
 
-func (rule *rule) toSparsePolyset() *sparse.Polyset {
-	n := rule.size / len(rule.folds)
-	builder := sparse.NewPolysetBuilder(rule.size)
+func (self *rule) toSparsePolyset() sparse.Polyset {
+	n := self.size / len(self.folds)
+	words := (self.size + 63) / 64
 
-	ids := rule.permutation.ids()
+	polys := make([]sparse.Polynomial, self.size)
+	for i := range polys {
+		polys[i] = sparse.NewPolynomial()
+	}
 
-	for i, fl := range rule.folds {
+	ids := self.permutation.ids()
+
+	for i, fl := range self.folds {
 		lin := fl.lin.Coefs()
 		noise := fl.noise
 

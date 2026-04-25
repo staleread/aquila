@@ -24,55 +24,55 @@ func NewCA(size, folds, degree, rules int) *CA {
 	return &CA{size, caRules, tmpState}
 }
 
-func (ca *CA) Apply(state []field.Element) {
-	if len(state) != ca.size {
+func (self *CA) Apply(state []field.Element) {
+	if len(state) != self.size {
 		panic("Invalid CA state size")
 	}
 
 	sv := linalg.Vector(state)
 
-	for i, r := range ca.rules {
+	for i, r := range self.rules {
 		if i%2 == 0 {
-			r.Apply(ca.tmpState, sv)
+			r.Apply(self.tmpState, sv)
 		} else {
-			r.Apply(sv, ca.tmpState)
+			r.Apply(sv, self.tmpState)
 		}
 	}
 
-	if len(ca.rules)%2 == 1 {
-		copy(sv, ca.tmpState)
+	if len(self.rules)%2 == 1 {
+		copy(sv, self.tmpState)
 	}
 }
 
-func (ca *CA) ApplyInverse(state []field.Element) {
-	if len(state) != ca.size {
+func (self *CA) ApplyInverse(state []field.Element) {
+	if len(state) != self.size {
 		panic("Invalid CA state size")
 	}
 
 	sv := linalg.Vector(state)
-	lastParity := (len(ca.rules) - 1) % 2
+	lastParity := (len(self.rules) - 1) % 2
 
-	for i := len(ca.rules) - 1; i >= 0; i-- {
-		r := ca.rules[i]
+	for i := len(self.rules) - 1; i >= 0; i-- {
+		r := self.rules[i]
 
 		if i%2 == lastParity {
-			r.ApplyInverse(ca.tmpState, sv)
+			r.ApplyInverse(self.tmpState, sv)
 		} else {
-			r.ApplyInverse(sv, ca.tmpState)
+			r.ApplyInverse(sv, self.tmpState)
 		}
 	}
 
 	if lastParity == 0 {
-		copy(sv, ca.tmpState)
+		copy(sv, self.tmpState)
 	}
 }
 
-func (ca *CA) ToGeneral() *general.CA {
-	n := len(ca.rules)
-	rule := ca.rules[n-1].toSparsePolyset()
+func (self *CA) ToGeneral() *general.CA {
+	n := len(self.rules)
+	rule := self.rules[n-1].toSparsePolyset()
 
 	for i := n - 2; i >= 0; i-- {
-		rule.ComposeWith(ca.rules[i].toSparsePolyset())
+		rule.Compose(self.rules[i].toSparsePolyset())
 	}
-	return general.NewCA(ca.size, rule.Compile())
+	return general.NewCA(self.size, rule.Compile())
 }

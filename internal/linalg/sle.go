@@ -14,13 +14,13 @@ func RandSLE(n int) *SLE {
 	}
 }
 
-func (s *SLE) Solve(dst, src Vector) {
-	s.lt.substituteForward(dst, src)
-	s.ut.substituteBackward(dst, dst)
+func (self *SLE) Solve(dst, src Vector) {
+	self.lt.substituteForward(dst, src)
+	self.ut.substituteBackward(dst, dst)
 }
 
-func (s *SLE) Eval(dst, src Vector) {
-	n := s.lt.n
+func (self *SLE) Eval(dst, src Vector) {
+	n := self.lt.n
 	tmp := ZeroVector(n)
 
 	// U * src = tmp
@@ -28,7 +28,7 @@ func (s *SLE) Eval(dst, src Vector) {
 		var sum field.Element = 0
 
 		for j := i; j < n; j++ {
-			sum = field.Add(sum, field.Mul(s.ut.At(i, j), src[j]))
+			sum = field.Add(sum, field.Mul(self.ut.At(i, j), src[j]))
 		}
 		tmp[i] = sum
 	}
@@ -38,14 +38,14 @@ func (s *SLE) Eval(dst, src Vector) {
 		var sum field.Element = 0
 
 		for j := range i + 1 {
-			sum = field.Add(sum, field.Mul(s.lt.At(i, j), tmp[j]))
+			sum = field.Add(sum, field.Mul(self.lt.At(i, j), tmp[j]))
 		}
 		dst[i] = sum
 	}
 }
 
-func (s *SLE) Coefs() *SquareMatrix {
-	n := s.lt.n
+func (self *SLE) Coefs() *SquareMatrix {
+	n := self.lt.n
 	coefs := zeroSquareMatrix(n)
 
 	for i := range n {
@@ -53,7 +53,7 @@ func (s *SLE) Coefs() *SquareMatrix {
 			var sum field.Element = 0
 
 			for k := range min(i, j) + 1 { // skip zero factors
-				sum = field.Add(sum, field.Mul(s.lt.At(i, k), s.ut.At(k, j)))
+				sum = field.Add(sum, field.Mul(self.lt.At(i, k), self.ut.At(k, j)))
 			}
 			coefs.data[n*i+j] = sum
 		}
