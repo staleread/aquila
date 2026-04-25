@@ -13,17 +13,17 @@ type Polyset struct {
 }
 
 func (set *Polyset) ComposeWith(other *Polyset) {
-	prodCache := make(map[*Monomial]Polynomial)
+	// prodCache := make(map[*Monomial]Polynomial)
 	cmpPool := newMonomialInternPool()
 
 	for i, p := range set.polynoms {
 		sum := Polynomial{}
 
 		for m := range p.Monomials() {
-			if cached, hit := prodCache[m]; hit {
-				sum.AddTo(cached)
-				continue
-			}
+			// if cached, hit := prodCache[m]; hit {
+			// 	sum.AddTo(cached)
+			// 	continue
+			// }
 
 			prod := Polynomial{}
 			isFirst := true
@@ -37,7 +37,7 @@ func (set *Polyset) ComposeWith(other *Polyset) {
 				cmpPool.mulPolynomialBy(prod, other.polynoms[s])
 			}
 			sum.AddTo(prod)
-			prodCache[m] = prod
+			// prodCache[m] = prod
 		}
 		set.polynoms[i] = sum
 	}

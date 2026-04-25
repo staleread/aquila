@@ -2,14 +2,27 @@ package main
 
 import (
 	"encoding/hex"
+	"flag"
 	"fmt"
+	"log"
+	"os"
+	// "runtime"
+	"runtime/pprof"
 )
 
+var memprofile = flag.String("memprofile", "", "write memory profile to file")
+
+// func init() {
+// 	runtime.MemProfileRate = 1
+// }
+
 func main() {
-	const bSize = 8
+	flag.Parse()
+
+	const bSize = 2
 	pt := []byte("MarsMars")
 
-	const ptSize = bSize * 1
+	const ptSize = bSize * 4
 
 	fmt.Println("Plain text     ", hex.EncodeToString(pt))
 
@@ -28,4 +41,13 @@ func main() {
 	dec := make([]byte, ptSize)
 	priv.Decrypt(dec, ct)
 	fmt.Println("Decrypted  text", hex.EncodeToString(dec))
+
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		pprof.WriteHeapProfile(f)
+	}
 }

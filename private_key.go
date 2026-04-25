@@ -35,7 +35,7 @@ var configs = map[int]config{
 		blockSize: 8,
 		folds:     8,
 		degree:    2,
-		rules:     3,
+		rules:     4,
 	},
 }
 
