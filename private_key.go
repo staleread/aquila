@@ -19,21 +19,21 @@ type config struct {
 }
 
 var configs = map[int]config{
-	2: {
-		blockSize: 2,
-		folds:     2,
-		degree:    2,
-		rules:     5,
-	},
 	4: {
 		blockSize: 4,
 		folds:     4,
 		degree:    2,
-		rules:     4,
+		rules:     5,
 	},
 	8: {
 		blockSize: 8,
 		folds:     8,
+		degree:    2,
+		rules:     3,
+	},
+	16: {
+		blockSize: 16,
+		folds:     16,
 		degree:    2,
 		rules:     3,
 	},

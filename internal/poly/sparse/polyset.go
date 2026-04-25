@@ -1,52 +1,45 @@
 package sparse
 
 import (
-	"fmt"
 	"github.com/staleread/aquila/internal/poly"
 	"github.com/staleread/aquila/internal/poly/compiled"
 	"strings"
 )
 
 type Polyset struct {
-	polynoms  []Polynomial
-	monomPool *monomialInternPool
+	data []Polynomial
 }
 
-func (set *Polyset) ComposeWith(other *Polyset) {
-	prodCache := make(map[*Monomial]Polynomial)
-	cmpPool := newMonomialInternPool()
+func NewPolyset(polys []Polynomial) Polyset {
+	return Polyset{data: polys}
+}
 
-	for i, p := range set.polynoms {
-		sum := Polynomial{}
+func (self Polyset) Compose(other Polyset) {
+	for i, poly := range self.data {
+		sum := NewPolynomial()
 
-		for m := range p.Monomials() {
-			if cached, hit := prodCache[m]; hit {
-				sum.AddTo(cached)
-				continue
-			}
-
-			prod := Polynomial{}
+		for monom := range poly.Monomials() {
+			prod := NewPolynomial()
 			isFirst := true
 
-			for s := range m.Subscripts() {
+			for sub := range monom.Subscripts() {
 				if isFirst {
-					prod.AddTo(other.polynoms[s])
+					prod = other.data[sub].Clone()
 					isFirst = false
-					continue
+				} else {
+					prod.Mul(other.data[sub])
 				}
-				cmpPool.mulPolynomialBy(prod, other.polynoms[s])
 			}
-			sum.AddTo(prod)
-			prodCache[m] = prod
+			sum.Add(prod)
 		}
-		set.polynoms[i] = sum
+		self.data[i] = sum
 	}
 }
 
-func (set *Polyset) Compile() *compiled.Polyset {
+func (self Polyset) Compile() *compiled.Polyset {
 	cmp := &compiled.Polyset{
 		Subscripts:   make([]poly.Subscript, 0),
-		PolyCount:    len(set.polynoms),
+		PolyCount:    len(self.data),
 		PolyOffsets:  make([]int, 1),
 		MonomOffsets: make([]int, 1),
 	}
@@ -54,7 +47,7 @@ func (set *Polyset) Compile() *compiled.Polyset {
 	var monomOffset int
 	var polyOffset int
 
-	for _, poly := range set.polynoms {
+	for _, poly := range self.data {
 		for monom := range poly.Monomials() {
 			for sub := range monom.Subscripts() {
 				cmp.Subscripts = append(cmp.Subscripts, sub)
@@ -68,30 +61,16 @@ func (set *Polyset) Compile() *compiled.Polyset {
 	return cmp
 }
 
-func (set *Polyset) String() string {
-	sb := strings.Builder{}
-
-	for i, poly := range set.polynoms {
-		fmt.Fprintf(&sb, "y%d = ", i+1)
-
-		isFirstMonomial := true
-		for monom := range poly.Monomials() {
-			if !isFirstMonomial {
-				sb.WriteString(" + ")
-			}
-			isFirstMonomial = false
-
-			isFirstSubscript := true
-			for sub := range monom.Subscripts() {
-				if !isFirstSubscript {
-					sb.WriteRune('*')
-				}
-				isFirstSubscript = false
-
-				fmt.Fprintf(&sb, "x%d", sub+1)
-			}
-		}
+func (self Polyset) Write(sb *strings.Builder) {
+	for i, poly := range self.data {
+		poly.Write(sb, i+1)
 		sb.WriteRune('\n')
 	}
+}
+
+func (self Polyset) String() string {
+	sb := &strings.Builder{}
+	self.Write(sb)
+
 	return sb.String()
 }

@@ -97,12 +97,11 @@ func (self *rule) toSparsePolyset() sparse.Polyset {
 			// Linear part
 			for k := range n {
 				val := lin.At(j, k)
-
 				if val == 0 {
 					continue
 				}
 				sub := ids[n*i+k]
-				builder.AddMonomOf(polynomIdx, sub)
+				polys[polynomIdx].Toggle(sparse.NewMonomial(words, sub))
 			}
 
 			// Non-linear part
@@ -118,10 +117,10 @@ func (self *rule) toSparsePolyset() sparse.Polyset {
 					for l, s := range noise.Subscripts[mStart:mEnd] {
 						subs[l] = ids[s]
 					}
-					builder.AddMonomOf(polynomIdx, subs...)
+					polys[polynomIdx].Toggle(sparse.NewMonomial(words, subs...))
 				}
 			}
 		}
 	}
-	return builder.Build()
+	return sparse.NewPolyset(polys)
 }

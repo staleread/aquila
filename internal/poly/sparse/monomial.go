@@ -2,93 +2,185 @@ package sparse
 
 import (
 	"fmt"
-	"github.com/staleread/aquila/internal/poly"
 	"iter"
-	"maps"
 	"strings"
+
+	"github.com/staleread/aquila/internal/poly"
 )
 
-type MonomialHash = uint64
-type subscriptSet = map[poly.Subscript]struct{}
+const monomChunkBits = 64
 
 type Monomial struct {
-	Hash MonomialHash
-	data subscriptSet
+	hash uint64
+	data []uint64
 }
 
-func NewMonomial(subs ...poly.Subscript) Monomial {
-	var hash MonomialHash
-	data := make(subscriptSet, len(subs))
+func EmptyMonomial(words int) Monomial {
+	return Monomial{0, make([]uint64, words)}
+}
 
-	for _, s := range subs {
-		if _, ok := data[s]; !ok {
-			data[s] = struct{}{}
-			hash ^= hashSubscript(s)
-		}
+func NewMonomial(words int, subs ...poly.Subscript) Monomial {
+	monom := EmptyMonomial(words)
+
+	for _, sub := range subs {
+		monom.Toggle(sub)
 	}
-	return Monomial{hash, data}
+	return monom
 }
 
-func hashSubscript(s poly.Subscript) MonomialHash {
-	x := MonomialHash(s + 1)
+func hashByte(s uint8) uint64 {
+	x := uint64(s) + 1
 	x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9
 	x = (x ^ (x >> 27)) * 0x94d049bb133111eb
 	return x ^ (x >> 31)
 }
 
-func (monom Monomial) Subscripts() iter.Seq[poly.Subscript] {
-	return maps.Keys(monom.data)
+func (self Monomial) Len() int {
+	return len(self.data) * monomChunkBits
 }
 
-func (a Monomial) Mul(b Monomial) Monomial {
-	hash := a.Hash ^ b.Hash
-	data := make(subscriptSet, max(len(a.data), len(b.data)))
+func (self Monomial) Has(sub poly.Subscript) bool {
+	chunk := self.data[len(self.data)-int(sub)/monomChunkBits-1]
+	bitValue := chunk >> (sub % monomChunkBits) & 1
 
-	for s := range a.data {
-		data[s] = struct{}{}
-	}
-
-	for s := range b.data {
-		if _, ok := a.data[s]; !ok {
-			data[s] = struct{}{}
-		} else {
-			// x_i^2 = x_i in GF(2): duplicate subscript is already in data,
-			// un-XOR its hash contribution since it was counted once in a.Hash
-			// and once in b.Hash but should only appear once in the product.
-			hash ^= hashSubscript(s)
-		}
-	}
-	return Monomial{hash, data}
+	return bitValue == 1
 }
 
-func (a Monomial) Equals(b Monomial) bool {
-	if len(a.data) != len(b.data) {
+func (self Monomial) Toggle(pos poly.Subscript) {
+	chunkIdx := len(self.data) - int(pos)/monomChunkBits - 1
+	tmp := uint64(1) << (pos % monomChunkBits)
+
+	self.data[chunkIdx] ^= tmp
+}
+
+func (self Monomial) Equals(other Monomial) bool {
+	n := len(self.data)
+
+	if n != len(other.data) {
 		return false
 	}
 
-	for s := range b.data {
-		if _, ok := a.data[s]; !ok {
+	for i := range n {
+		if self.data[i] != other.data[i] {
 			return false
 		}
 	}
 	return true
 }
 
-func (monom Monomial) String() string {
-	sb := strings.Builder{}
+func (self Monomial) Hash() uint64 {
+	const chunkBytes = monomChunkBits / 8
 
-	sb.WriteByte('{')
-
-	isFirstSub := true
-	for s := range monom.Subscripts() {
-		if !isFirstSub {
-			sb.WriteString(", ")
-		}
-		isFirstSub = false
-
-		fmt.Fprintf(&sb, "%d", s)
+	if self.hash != 0 {
+		return self.hash
 	}
-	sb.WriteByte('}')
+
+	n := len(self.data)
+	var hash uint64
+
+	for i := range n {
+		tmp := self.data[n-i-1]
+
+		for j := range chunkBytes {
+			byteToHash := uint8((tmp >> (j * 8)) & 0xff)
+			hash = hash*31 + hashByte(byteToHash)
+		}
+	}
+
+	self.hash = hash
+	return hash
+}
+
+func (self Monomial) Mul(other Monomial) {
+	n := len(self.data)
+
+	if n != len(other.data) {
+		panic("Size of monomials do not match")
+	}
+
+	for i := range n {
+		self.data[i] |= other.data[i]
+	}
+}
+
+func (self Monomial) Product(other Monomial) Monomial {
+	n := len(self.data)
+
+	if n != len(other.data) {
+		panic("Size of monomials do not match")
+	}
+
+	monom := EmptyMonomial(n)
+
+	for i := range n {
+		monom.data[i] = self.data[i] | other.data[i]
+	}
+	return monom
+}
+
+func (self Monomial) Clone() Monomial {
+	n := len(self.data)
+
+	monom := EmptyMonomial(n)
+
+	for i := range n {
+		monom.data[i] = self.data[i]
+	}
+	return monom
+}
+
+func (self Monomial) Write(sb *strings.Builder) {
+	n := len(self.data)
+	isFirst := true
+
+	for i := range n {
+		tmp := self.data[n-i-1]
+
+		for j := range monomChunkBits {
+			isPresent := (tmp>>j)&1 == 1
+
+			if !isPresent {
+				continue
+			}
+
+			if !isFirst {
+				sb.WriteString("*")
+			} else {
+				isFirst = false
+			}
+
+			fmt.Fprintf(sb, "x%d", i*monomChunkBits+j+1)
+		}
+	}
+}
+
+func (self Monomial) String() string {
+	sb := &strings.Builder{}
+	self.Write(sb)
 
 	return sb.String()
+}
+
+func (self Monomial) Subscripts() iter.Seq[poly.Subscript] {
+	n := len(self.data)
+
+	return func(yield func(poly.Subscript) bool) {
+		for i := range n {
+			tmp := self.data[n-i-1]
+
+			for j := range monomChunkBits {
+				isPresent := (tmp>>j)&1 == 1
+
+				if !isPresent {
+					continue
+				}
+
+				sub := poly.Subscript(i*monomChunkBits + j)
+
+				if !yield(sub) {
+					return
+				}
+			}
+		}
+	}
 }

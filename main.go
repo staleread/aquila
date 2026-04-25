@@ -7,11 +7,11 @@ import (
 
 func main() {
 	const bSize = 8
-	pt := []byte("MarsMars")
+	pt := []byte("MarsMarsMarsMarsMarsMarsMarsMars")
 
-	const ptSize = bSize * 1
+	const ptSize = bSize * 4
 
-	fmt.Println("Plain text     ", hex.EncodeToString(pt))
+	fmt.Println("Plain text    ", hex.EncodeToString(pt))
 
 	priv, err := GenerateKey(bSize)
 
@@ -23,9 +23,9 @@ func main() {
 
 	ct := make([]byte, ptSize)
 	pub.Encrypt(ct, pt)
-	fmt.Println("Cipher text    ", hex.EncodeToString(ct))
+	fmt.Println("Cipher text   ", hex.EncodeToString(ct))
 
 	dec := make([]byte, ptSize)
 	priv.Decrypt(dec, ct)
-	fmt.Println("Decrypted  text", hex.EncodeToString(dec))
+	fmt.Println("Decrypted text", hex.EncodeToString(dec))
 }
