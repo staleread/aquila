@@ -1,52 +1,28 @@
-package field
+package gf2
 
 import "crypto/rand"
 
-type Element uint8
+type Element = uint8
+
+const (
+	Zero Element = 0
+	One  Element = 1
+)
 
 func ElementsInBytes(bytes int) int {
 	return bytes * 8
 }
 
-func RandElements(n int) []Element {
-	els := make([]Element, n)
+func FillRand(els []Element) {
+	n := len(els)
 
-	buf := make([]byte, (n+7)/8)
-	rand.Read(buf)
-
-	for i := range n {
-		val := buf[i/8] >> (i % 8)
-		els[i] = Element(val & 1)
-	}
-	return els
-}
-
-func RandNonZeroElements(n int) []Element {
-	els := make([]Element, n)
+	// HACK to avoid extra allocations.
+	bufStart := n - 1 - (n+7)/8
+	rand.Read(els[bufStart:])
 
 	for i := range n {
-		els[i] = 1
+		els[i] = (els[bufStart+i/8] >> (i % 8)) & 1
 	}
-	return els
-}
-
-func Add(a, b Element) Element {
-	return a ^ b
-}
-
-func Sub(a, b Element) Element {
-	return a ^ b
-}
-
-func Mul(a, b Element) Element {
-	return a & b
-}
-
-func Div(a, b Element) Element {
-	if b == 0 {
-		panic("Division by zero")
-	}
-	return a
 }
 
 func ReadElements(dst []Element, src []byte) {
