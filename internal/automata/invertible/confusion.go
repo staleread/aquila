@@ -11,7 +11,7 @@ func (p ConfusionMap) FillRand(maxSub Subscript) {
 	FillRandSubscripts(p, maxSub)
 
 	subIdx := 0
-	for range automata.FoldSize {
+	for range Dim {
 		for j := automata.ConfusionMapDegree; j > 0; j-- {
 			upperBound := maxSub - Subscript(j)
 
@@ -34,11 +34,11 @@ func (p ConfusionMap) Eval(state []uint64) Vector {
 	var res Vector
 	subIdx := 0
 
-	for i := range 16 {
+	for i := range Dim {
 		var sum Vector
 
 		for j := range automata.ConfusionMapDegree {
-			prod := Ones
+			prod := Vector(1)
 			subCnt := automata.ConfusionMapDegree - j
 
 			for range subCnt {

@@ -1,10 +1,14 @@
 package invertible
 
-import "math/bits"
+import (
+	"math/bits"
+
+	"github.com/staleread/aquila/internal/automata"
+)
 
 type Vector uint16
 
-const Ones Vector = 0xFFFF
+const Dim = automata.FoldSize
 
 func (v Vector) Sum() Vector {
 	return Vector(bits.OnesCount16(uint16(v))) & 1

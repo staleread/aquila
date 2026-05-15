@@ -3,11 +3,7 @@ package invertible
 import (
 	"crypto/rand"
 	"unsafe"
-
-	"github.com/staleread/aquila/internal/automata"
 )
-
-const Dim = automata.FoldSize
 
 type SLE []Vector
 
