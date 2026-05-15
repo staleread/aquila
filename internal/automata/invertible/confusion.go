@@ -2,11 +2,19 @@ package invertible
 
 import "slices"
 
-type ConfusionMap []Subscript
+type ConfusionMap struct {
+	data []Subscript
+}
 
-func (p ConfusionMap) FillRand(foldIdx int, perm Permutation) {
+func NewConfusionMap(arena []Subscript) *ConfusionMap {
+	return &ConfusionMap{
+		data: arena,
+	}
+}
+
+func (m *ConfusionMap) FillRand(foldIdx int, perm Permutation) {
 	maxSub := Subscript(foldIdx * VectorSize)
-	FillRandSubscripts(p, maxSub)
+	FillRandSubscripts(m.data, maxSub)
 
 	subIdx := 0
 	for range VectorSize {
@@ -14,15 +22,15 @@ func (p ConfusionMap) FillRand(foldIdx int, perm Permutation) {
 			upperBound := maxSub - Subscript(j)
 
 			for k := range j {
-				candidateIdx := p[subIdx] % (upperBound + Subscript(k) + 1)
+				candidateIdx := m.data[subIdx] % (upperBound + Subscript(k) + 1)
 				candidate := perm[candidateIdx]
 
-				duplicate := slices.Contains(p[subIdx-k:subIdx], candidate)
+				duplicate := slices.Contains(m.data[subIdx-k:subIdx], candidate)
 
 				if duplicate {
-					p[subIdx] = perm[upperBound+Subscript(k)]
+					m.data[subIdx] = perm[upperBound+Subscript(k)]
 				} else {
-					p[subIdx] = candidate
+					m.data[subIdx] = candidate
 				}
 				subIdx++
 			}
@@ -30,7 +38,7 @@ func (p ConfusionMap) FillRand(foldIdx int, perm Permutation) {
 	}
 }
 
-func (p ConfusionMap) Eval(state []uint64) Vector {
+func (m *ConfusionMap) Eval(state []uint64) Vector {
 	var res Vector
 	subIdx := 0
 
@@ -42,7 +50,7 @@ func (p ConfusionMap) Eval(state []uint64) Vector {
 			subCnt := ConfusionDegree - j
 
 			for range subCnt {
-				idx := uint8(p[subIdx])
+				idx := uint8(m.data[subIdx])
 
 				bit := (state[idx/64] >> (idx % 64)) & 1
 				prod &= Vector(bit)
