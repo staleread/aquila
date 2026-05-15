@@ -1,20 +1,29 @@
 package invertible
 
-import "slices"
+import (
+	"io"
+	"slices"
+)
+
+type Subscript = uint8
 
 type ConfusionMap struct {
 	data []Subscript
 }
 
-func NewConfusionMap(arena []Subscript) *ConfusionMap {
-	return &ConfusionMap{
-		data: arena,
-	}
+func NewConfusionMap(arena []byte) *ConfusionMap {
+	return &ConfusionMap{data: arena}
 }
 
-func (m *ConfusionMap) FillRand(foldIdx int, perm Permutation) {
+func (m *ConfusionMap) Generate(rnd io.Reader, foldIdx int, perm Permutation) error {
+	if _, err := io.ReadFull(rnd, m.data); err != nil {
+		return err
+	}
+
 	maxSub := Subscript(foldIdx * VectorSize)
-	FillRandSubscripts(m.data, maxSub)
+	for i := range m.data {
+		m.data[i] &= maxSub
+	}
 
 	subIdx := 0
 	for range VectorSize {
@@ -36,6 +45,7 @@ func (m *ConfusionMap) FillRand(foldIdx int, perm Permutation) {
 			}
 		}
 	}
+	return nil
 }
 
 func (m *ConfusionMap) Eval(state []uint64) Vector {

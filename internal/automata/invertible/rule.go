@@ -1,126 +1,71 @@
 package invertible
 
-import (
-	"github.com/staleread/aquila/internal/linalg"
-	"github.com/staleread/aquila/internal/poly"
-	"github.com/staleread/aquila/internal/poly/compiled"
-	"github.com/staleread/aquila/internal/poly/sparse"
-)
+import "io"
 
-type fold struct {
-	lin   *linalg.SLE
-	noise *compiled.Polyset
+type Rule struct {
+	arena []byte
+	perm  Permutation
 }
 
-type rule struct {
-	size        int
-	permutation permutation
-	folds       []fold
+type Fold struct {
+	sle       *SLE
+	confusion *ConfusionMap
 }
 
-func randRule(size, folds, degree int) *rule {
-	permutation := randPermutation(size)
-	n := size / folds
-	sFolds := make([]fold, folds)
+func (r *Rule) Generate(rnd io.Reader) error {
+	entropyBuf := r.arena[:PermutationBytes]
 
-	sFolds[0] = fold{
-		lin:   linalg.RandSLE(n),
-		noise: compiled.EmptyPolyset(),
+	if err := r.perm.Generate(rnd, entropyBuf); err != nil {
+		return err
 	}
 
-	for i := 1; i < folds; i++ {
-		maxSub := poly.Subscript(n * i)
+	for i := range FoldsCount {
+		fold := r.getFold(i)
 
-		sFolds[i] = fold{
-			lin:   linalg.RandSLE(n),
-			noise: compiled.RandPolyset(n, degree, maxSub),
+		if err := fold.sle.Generate(rnd); err != nil {
+			return err
+		}
+		if err := fold.confusion.Generate(rnd, i, r.perm); err != nil {
+			return err
 		}
 	}
-	return &rule{size, permutation, sFolds}
+	return nil
 }
 
-func (self *rule) Apply(dst, src linalg.Vector) {
-	n := self.size / len(self.folds)
+func (r *Rule) Apply(state Block) {
+	for i := range FoldsCount {
+		fold := r.getFold(i)
 
-	self.permutation.permute(src)
+		in := r.perm.Gather(state, i)
 
-	for i, fl := range self.folds {
-		xCurr := src[n*i : n*i+n]
-		bCurr := dst[n*i : n*i+n]
+		out := fold.sle.Eval(in)
+		out ^= fold.confusion.Eval(state)
 
-		fl.lin.Eval(bCurr, xCurr)
-
-		noise := linalg.ZeroVector(n)
-		xPrev := src[:n*i]
-
-		fl.noise.Eval(noise, xPrev)
-		bCurr.Add(noise)
+		r.perm.Scatter(state, i, out)
 	}
 }
 
-func (self *rule) ApplyInverse(dst, src linalg.Vector) {
-	n := self.size / len(self.folds)
+func (r *Rule) Revert(state Block) {
+	for i := range FoldsCount {
+		fold := r.getFold(i)
 
-	for i, fl := range self.folds {
-		noise := linalg.ZeroVector(n)
-		xPrev := dst[:n*i]
-		bCurr := src[n*i : n*i+n]
+		in := r.perm.Gather(state, i)
 
-		fl.noise.Eval(noise, xPrev)
-		bCurr.Sub(noise)
+		noise := fold.confusion.Eval(state)
+		out := fold.sle.Solve(in ^ noise)
 
-		xCurr := dst[n*i : n*i+n]
-
-		fl.lin.Solve(xCurr, bCurr)
+		r.perm.Scatter(state, i, out)
 	}
-	self.permutation.permuteBack(dst)
 }
 
-func (self *rule) toSparsePolyset() sparse.Polyset {
-	n := self.size / len(self.folds)
-	words := (self.size + 63) / 64
+func (r *Rule) getFold(idx int) Fold {
+	offset := idx * VectorSize
 
-	polys := make([]sparse.Polynomial, self.size)
-	for i := range polys {
-		polys[i] = sparse.NewPolynomial()
+	sleArena := r.arena[offset : offset+SLEBytes]
+	confusionArena := r.arena[offset+SLEBytes : offset+FoldBytes]
+
+	return Fold{
+		sle:       NewSLE(sleArena),
+		confusion: NewConfusionMap(confusionArena),
 	}
-
-	ids := self.permutation.ids()
-
-	for i, fl := range self.folds {
-		lin := fl.lin.Coefs()
-		noise := fl.noise
-
-		for j := range n {
-			polynomIdx := n*i + j
-
-			// Linear part
-			for k := range n {
-				val := lin.At(j, k)
-				if val == 0 {
-					continue
-				}
-				sub := ids[n*i+k]
-				polys[polynomIdx].Toggle(sparse.NewMonomial(words, sub))
-			}
-
-			// Non-linear part
-			if noise.PolyCount > 0 {
-				pStart := noise.PolyOffsets[j]
-				pEnd := noise.PolyOffsets[j+1]
-
-				for k := pStart; k < pEnd; k++ {
-					mStart := noise.MonomOffsets[k]
-					mEnd := noise.MonomOffsets[k+1]
-
-					subs := make([]poly.Subscript, mEnd-mStart)
-					for l, s := range noise.Subscripts[mStart:mEnd] {
-						subs[l] = ids[s]
-					}
-					polys[polynomIdx].Toggle(sparse.NewMonomial(words, subs...))
-				}
-			}
-		}
-	}
-	return sparse.NewPolyset(polys)
 }

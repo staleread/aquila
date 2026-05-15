@@ -1,7 +1,7 @@
 package invertible
 
 import (
-	"crypto/rand"
+	"io"
 	"unsafe"
 )
 
@@ -9,19 +9,22 @@ type SLE struct {
 	data []Vector
 }
 
-func NewSLE(arena []Vector) *SLE {
-	return &SLE{
-		data: arena,
-	}
+func NewSLE(arena []byte) *SLE {
+	data := unsafe.Slice((*Vector)(unsafe.Pointer(&arena[0])), len(arena)/2)
+
+	return &SLE{data}
 }
 
-func (s *SLE) FillRand() {
+func (s *SLE) Generate(rnd io.Reader) error {
 	byteView := unsafe.Slice((*byte)(unsafe.Pointer(&s.data[0])), len(s.data)*2)
-	rand.Read(byteView)
+	if _, err := io.ReadFull(rnd, byteView); err != nil {
+		return err
+	}
 
 	for i := range VectorSize {
 		s.data[i] |= 1 << i
 	}
+	return nil
 }
 
 func (s *SLE) Solve(b Vector) Vector {

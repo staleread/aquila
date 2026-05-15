@@ -1,23 +1,26 @@
 package invertible
 
-import "crypto/rand"
+import "io"
 
 type Permutation []Subscript
 
-func (p Permutation) FillRand(tmp []byte) {
+func (p Permutation) Generate(rnd io.Reader, tmp []byte) error {
 	const n Subscript = VectorSize
 
 	for i := range n {
 		p[i] = i
 	}
 
-	rand.Read(tmp)
+	if _, err := io.ReadFull(rnd, tmp); err != nil {
+		return err
+	}
 
 	// Fisher–Yates shuffle
 	for i := range n - 2 {
 		j := tmp[i]%(n-i+1) + i
 		p[i], p[j] = p[j], p[i]
 	}
+	return nil
 }
 
 func (p Permutation) Gather(b Block, foldIdx int) Vector {
