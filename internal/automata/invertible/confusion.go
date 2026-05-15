@@ -1,26 +1,26 @@
 package invertible
 
-import (
-	"github.com/staleread/aquila/internal/automata"
-	"slices"
-)
+import "slices"
 
 type ConfusionMap []Subscript
 
-func (p ConfusionMap) FillRand(maxSub Subscript) {
+func (p ConfusionMap) FillRand(foldIdx int, perm Permutation) {
+	maxSub := Subscript(foldIdx * VectorSize)
 	FillRandSubscripts(p, maxSub)
 
 	subIdx := 0
-	for range Dim {
-		for j := automata.ConfusionMapDegree; j > 0; j-- {
+	for range VectorSize {
+		for j := ConfusionDegree; j > 0; j-- {
 			upperBound := maxSub - Subscript(j)
 
 			for k := range j {
-				candidate := p[subIdx] % (upperBound + Subscript(k) + 1)
+				candidateIdx := p[subIdx] % (upperBound + Subscript(k) + 1)
+				candidate := perm[candidateIdx]
+
 				duplicate := slices.Contains(p[subIdx-k:subIdx], candidate)
 
 				if duplicate {
-					p[subIdx] = upperBound + Subscript(k)
+					p[subIdx] = perm[upperBound+Subscript(k)]
 				} else {
 					p[subIdx] = candidate
 				}
@@ -34,12 +34,12 @@ func (p ConfusionMap) Eval(state []uint64) Vector {
 	var res Vector
 	subIdx := 0
 
-	for i := range Dim {
+	for i := range VectorSize {
 		var sum Vector
 
-		for j := range automata.ConfusionMapDegree {
+		for j := range ConfusionDegree {
 			prod := Vector(1)
-			subCnt := automata.ConfusionMapDegree - j
+			subCnt := ConfusionDegree - j
 
 			for range subCnt {
 				idx := uint8(p[subIdx])
