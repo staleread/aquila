@@ -11,5 +11,5 @@ func (b Block) SetAt(bit Bit, idx uint8) {
 	wordIdx := idx >> 6
 	shift := idx & 63
 
-	b[wordIdx] = (b[wordIdx] &^ (uint64(1) << shift)) | uint64(bit&1) << shift
+	b[wordIdx] = (b[wordIdx] &^ (uint64(1) << shift)) | uint64(bit&1)<<shift
 }

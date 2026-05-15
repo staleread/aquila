@@ -11,7 +11,7 @@ func (s SLE) FillRand() {
 	byteView := unsafe.Slice((*byte)(unsafe.Pointer(&s[0])), len(s)*2)
 	rand.Read(byteView)
 
-	for i := range Dim {
+	for i := range VectorSize {
 		s[i] |= 1 << i
 	}
 }
@@ -25,7 +25,7 @@ func (s SLE) Eval(x Vector) Vector {
 }
 
 func (s SLE) Coefs(dst []Vector) {
-	for i := range Dim {
+	for i := range VectorSize {
 		iMask := ^Vector((1 << i) - 1)
 		dstRow := s[i] & iMask
 
@@ -43,7 +43,7 @@ func (s SLE) Coefs(dst []Vector) {
 func (s SLE) substituteForward(v Vector) Vector {
 	var res Vector
 
-	for i := range Dim {
+	for i := range VectorSize {
 		res |= (v>>i ^ s[i].Dot(res)) << i
 	}
 	return res
@@ -52,7 +52,7 @@ func (s SLE) substituteForward(v Vector) Vector {
 func (s SLE) substituteBackward(v Vector) Vector {
 	var res Vector
 
-	for i := Dim - 1; i >= 0; i-- {
+	for i := VectorSize - 1; i >= 0; i-- {
 		res |= (v>>i ^ s[i].Dot(res)) << i
 	}
 	return res
@@ -61,7 +61,7 @@ func (s SLE) substituteBackward(v Vector) Vector {
 func (s SLE) multiplyLower(v Vector) Vector {
 	var res Vector
 
-	for i := range Dim {
+	for i := range VectorSize {
 		mask := Vector((1 << (i + 1)) - 1)
 		res |= s[i].Dot(v&mask) << i
 	}
@@ -71,7 +71,7 @@ func (s SLE) multiplyLower(v Vector) Vector {
 func (s SLE) multiplyUpper(v Vector) Vector {
 	var res Vector
 
-	for i := range Dim {
+	for i := range VectorSize {
 		mask := ^Vector((1 << i) - 1)
 		res |= s[i].Dot(v&mask) << i
 	}
