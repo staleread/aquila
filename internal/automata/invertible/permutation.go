@@ -1,54 +1,41 @@
 package invertible
 
-import (
-	"github.com/staleread/aquila/internal/field"
-	"github.com/staleread/aquila/internal/poly"
-)
+import "crypto/rand"
 
-type permutation []int
+type Permutation []Subscript
 
-func randPermutation(n int) permutation {
-	p := make(permutation, n-1)
-	rands := poly.RandSubscripts(n - 1)
+func (p Permutation) FillRand(tmp []byte) {
+	const n Subscript = VectorSize
+
+	for i := range n {
+		p[i] = i
+	}
+
+	rand.Read(tmp)
 
 	// Fisher–Yates shuffle
-	for i := range n - 1 {
-		p[i] = int(rands[i])%(n-i) + i
-	}
-	return p
-}
-
-func (self permutation) permute(v []field.Element) {
-	if len(v) != len(self)+1 {
-		panic("Array size doesn't match the permutation size")
-	}
-
-	for i, j := range self {
-		v[i], v[j] = v[j], v[i]
+	for i := range n - 2 {
+		j := tmp[i]%(n-i+1) + i
+		p[i], p[j] = p[j], p[i]
 	}
 }
 
-func (self permutation) permuteBack(v []field.Element) {
-	if len(v) != len(self)+1 {
-		panic("Array size doesn't match the permutation size")
-	}
+func (p Permutation) Gather(b Block, foldIdx int) Vector {
+	var res Vector
+	offset := foldIdx * VectorSize
 
-	for i := len(self) - 1; i >= 0; i-- {
-		j := self[i]
-		v[i], v[j] = v[j], v[i]
+	for i := range VectorSize {
+		bit := b.At(p[offset+i])
+		res |= Vector(bit) << i
 	}
+	return res
 }
 
-func (self permutation) ids() []poly.Subscript {
-	n := len(self) + 1
-	ids := make([]poly.Subscript, n)
+func (p Permutation) Scatter(b Block, foldIdx int, v Vector) {
+	offset := foldIdx * VectorSize
 
-	for i := range poly.Subscript(n) {
-		ids[i] = i
+	for i := range VectorSize {
+		bit := Bit((v >> i) & 1)
+		b.SetAt(p[offset+i], bit)
 	}
-
-	for i, j := range self {
-		ids[i], ids[j] = ids[j], ids[i]
-	}
-	return ids
 }
