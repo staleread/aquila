@@ -55,7 +55,7 @@ func (s *SLE) substituteForward(v Vector) Vector {
 	var res Vector
 
 	for i, row := range s.data {
-		res |= (v>>i ^ row.Dot(res)) << i
+		res |= ((v >> i) ^ row.Dot(res)) & 1 << i
 	}
 	return res
 }
@@ -65,7 +65,7 @@ func (s *SLE) substituteBackward(v Vector) Vector {
 
 	for i := VectorSize - 1; i >= 0; i-- {
 		row := s.data[i]
-		res |= (v>>i ^ row.Dot(res)) << i
+		res |= ((v >> i) ^ row.Dot(res)) & 1 << i
 	}
 	return res
 }

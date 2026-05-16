@@ -3,6 +3,8 @@ package invertible
 import (
 	"io"
 	"slices"
+
+	"github.com/staleread/aquila/internal/automata"
 )
 
 type Subscript = uint8
@@ -15,29 +17,28 @@ func NewConfusionMap(arena []byte) *ConfusionMap {
 	return &ConfusionMap{data: arena}
 }
 
-func (m *ConfusionMap) Generate(rnd io.Reader, foldIdx int, perm Permutation) error {
+func (m *ConfusionMap) Generate(rnd io.Reader, maxSub Subscript, perm *Permutation) error {
 	if _, err := io.ReadFull(rnd, m.data); err != nil {
 		return err
 	}
 
-	maxSub := Subscript(foldIdx * VectorSize)
 	for i := range m.data {
-		m.data[i] &= maxSub
+		m.data[i] %= maxSub
 	}
 
 	subIdx := 0
 	for range VectorSize {
 		for j := ConfusionDegree; j > 0; j-- {
-			upperBound := maxSub - Subscript(j)
+			upperBound := int(maxSub) - j
 
 			for k := range j {
-				candidateIdx := m.data[subIdx] % (upperBound + Subscript(k) + 1)
-				candidate := perm[candidateIdx]
+				candidateIdx := int(m.data[subIdx]) % (upperBound + k + 1)
+				candidate := perm.data[candidateIdx]
 
 				duplicate := slices.Contains(m.data[subIdx-k:subIdx], candidate)
 
 				if duplicate {
-					m.data[subIdx] = perm[upperBound+Subscript(k)]
+					m.data[subIdx] = perm.data[upperBound+k]
 				} else {
 					m.data[subIdx] = candidate
 				}
@@ -48,7 +49,11 @@ func (m *ConfusionMap) Generate(rnd io.Reader, foldIdx int, perm Permutation) er
 	return nil
 }
 
-func (m *ConfusionMap) Eval(state []uint64) Vector {
+func (m *ConfusionMap) Eval(state *automata.Block) Vector {
+	if m == nil {
+		return Vector(0)
+	}
+
 	var res Vector
 	subIdx := 0
 
@@ -60,9 +65,7 @@ func (m *ConfusionMap) Eval(state []uint64) Vector {
 			subCnt := ConfusionDegree - j
 
 			for range subCnt {
-				idx := uint8(m.data[subIdx])
-
-				bit := (state[idx/64] >> (idx % 64)) & 1
+				bit := state.At(m.data[subIdx])
 				prod &= Vector(bit)
 
 				subIdx++

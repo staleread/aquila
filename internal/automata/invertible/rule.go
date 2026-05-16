@@ -1,10 +1,13 @@
 package invertible
 
-import "io"
+import (
+	"io"
+
+	"github.com/staleread/aquila/internal/automata"
+)
 
 type Rule struct {
 	arena []byte
-	perm  Permutation
 }
 
 type Fold struct {
@@ -13,9 +16,10 @@ type Fold struct {
 }
 
 func (r *Rule) Generate(rnd io.Reader) error {
-	entropyBuf := r.arena[:PermutationBytes]
+	perm := r.getPermutation()
+	entropyBuf := r.arena[:PermutationBytes-1]
 
-	if err := r.perm.Generate(rnd, entropyBuf); err != nil {
+	if err := perm.Generate(rnd, entropyBuf); err != nil {
 		return err
 	}
 
@@ -25,47 +29,70 @@ func (r *Rule) Generate(rnd io.Reader) error {
 		if err := fold.sle.Generate(rnd); err != nil {
 			return err
 		}
-		if err := fold.confusion.Generate(rnd, i, r.perm); err != nil {
+
+		if i == 0 {
+			continue
+		}
+
+		maxSub := Subscript(i * VectorSize)
+		if err := fold.confusion.Generate(rnd, maxSub, perm); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (r *Rule) Apply(state Block) {
+func (r *Rule) Apply(state *automata.Block) {
+	perm := r.getPermutation()
+
 	for i := range FoldsCount {
 		fold := r.getFold(i)
 
-		in := r.perm.Gather(state, i)
+		in := perm.Gather(state, i)
 
 		out := fold.sle.Eval(in)
 		out ^= fold.confusion.Eval(state)
 
-		r.perm.Scatter(state, i, out)
+		perm.Scatter(state, i, out)
 	}
 }
 
-func (r *Rule) Revert(state Block) {
-	for i := range FoldsCount {
+func (r *Rule) Revert(state *automata.Block) {
+	perm := r.getPermutation()
+
+	for i := FoldsCount - 1; i >= 0; i-- {
 		fold := r.getFold(i)
 
-		in := r.perm.Gather(state, i)
+		in := perm.Gather(state, i)
 
 		noise := fold.confusion.Eval(state)
 		out := fold.sle.Solve(in ^ noise)
 
-		r.perm.Scatter(state, i, out)
+		perm.Scatter(state, i, out)
 	}
 }
 
 func (r *Rule) getFold(idx int) Fold {
-	offset := idx * VectorSize
+	// First fold only has linear part
+	if idx == 0 {
+		return Fold{
+			sle:       NewSLE(r.arena[:LinearFoldBytes]),
+			confusion: nil,
+		}
+	}
 
-	sleArena := r.arena[offset : offset+SLEBytes]
-	confusionArena := r.arena[offset+SLEBytes : offset+FoldBytes]
+	offset := LinearFoldBytes + (idx-1)*FoldBytes
 
 	return Fold{
-		sle:       NewSLE(sleArena),
-		confusion: NewConfusionMap(confusionArena),
+		sle:       NewSLE(r.arena[offset : offset+SLEBytes]),
+		confusion: NewConfusionMap(r.arena[offset+SLEBytes : offset+FoldBytes]),
 	}
+}
+
+func (r *Rule) getPermutation() *Permutation {
+	const offset = RuleFoldsBytes
+
+	view := r.arena[offset : offset+PermutationBytes]
+
+	return NewPermutation(view)
 }

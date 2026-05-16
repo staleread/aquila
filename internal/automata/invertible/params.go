@@ -4,13 +4,18 @@ import "github.com/staleread/aquila/internal/automata"
 
 const (
 	VectorSize       = 16
-	FoldsCount       = automata.BlockSize / VectorSize
 	ConfusionDegree  = 3
 	ConfusionMapSize = ConfusionDegree * (ConfusionDegree + 1) / 2 * VectorSize
+	PermutationSize  = automata.BlockSize
+	FoldsCount       = automata.BlockSize / VectorSize
+	RulesCount       = 2
 
 	SLEBytes          = VectorSize * VectorSize / 8
 	ConfusionMapBytes = ConfusionMapSize
+	PermutationBytes  = PermutationSize
+	LinearFoldBytes   = SLEBytes
 	FoldBytes         = SLEBytes + ConfusionMapBytes
-	PermutationBytes  = VectorSize
-	RuleBytes         = FoldBytes*FoldsCount - ConfusionMapBytes + PermutationBytes
+	RuleFoldsBytes    = LinearFoldBytes + FoldBytes*(FoldsCount-1)
+	RuleBytes         = RuleFoldsBytes + PermutationBytes
+	CABytes           = RuleBytes * RulesCount
 )
