@@ -17,6 +17,14 @@ func (h *MonomialMaxHeap) Len() int {
 	return h.size
 }
 
+// Add heap element without the swim phase.
+// Useful for creating an initial state and calling Heapify()
+// Which is O(n) compared to O(n * log n) insertion using Push()
+func (h *MonomialMaxHeap) Append(prod MonomialHeapItem) {
+	h.data[h.size] = prod
+	h.size++
+}
+
 func (h *MonomialMaxHeap) Push(prod MonomialHeapItem) {
 	h.data[h.size] = prod
 	h.swim()
@@ -30,8 +38,14 @@ func (h *MonomialMaxHeap) Peek() MonomialHeapItem {
 func (h *MonomialMaxHeap) Pop() MonomialHeapItem {
 	h.size--
 	h.swap(0, h.size)
-	h.sink()
+	h.sink(0)
 	return h.data[h.size]
+}
+
+func (h *MonomialMaxHeap) Heapify() {
+	for i := (h.size / 2) - 1; i >= 0; i-- {
+		h.sink(i)
+	}
 }
 
 func (h *MonomialMaxHeap) more(i, j int) bool {
@@ -42,9 +56,7 @@ func (h *MonomialMaxHeap) swap(i, j int) {
 	h.data[i], h.data[j] = h.data[j], h.data[i]
 }
 
-func (h *MonomialMaxHeap) sink() {
-	parent := 0
-
+func (h *MonomialMaxHeap) sink(parent int) {
 	for {
 		child1 := 2*parent + 1
 
