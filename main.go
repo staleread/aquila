@@ -6,26 +6,21 @@ import (
 )
 
 func main() {
-	const bSize = 8
-	pt := []byte("MarsMarsMarsMarsMarsMarsMarsMars")
+	pt := []byte("Hello, world!!!!")
 
-	const ptSize = bSize * 4
+	fmt.Println("Plain text     ", hex.EncodeToString(pt))
 
-	fmt.Println("Plain text    ", hex.EncodeToString(pt))
-
-	priv, err := GenerateKey(bSize)
+	priv, err := GenerateKey()
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	pub := priv.Public()
+	ct := make([]byte, len(pt))
+	priv.encrypt(ct, pt)
+	fmt.Println("Cipher text    ", hex.EncodeToString(ct))
 
-	ct := make([]byte, ptSize)
-	pub.Encrypt(ct, pt)
-	fmt.Println("Cipher text   ", hex.EncodeToString(ct))
-
-	dec := make([]byte, ptSize)
+	dec := make([]byte, len(pt))
 	priv.Decrypt(dec, ct)
-	fmt.Println("Decrypted text", hex.EncodeToString(dec))
+	fmt.Println("Decrypted  text", hex.EncodeToString(dec))
 }

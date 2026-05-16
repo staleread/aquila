@@ -1,77 +1,65 @@
 package main
 
 import (
+	"crypto/rand"
 	"errors"
+	"io"
+
+	"github.com/staleread/aquila/internal/automata"
 	"github.com/staleread/aquila/internal/automata/invertible"
-	"github.com/staleread/aquila/internal/field"
 )
 
 type PrivateKey struct {
-	blockSize int
-	ca        *invertible.CA
+	ca *invertible.CA
 }
 
-type config struct {
-	blockSize int
-	folds     int
-	degree    int
-	rules     int
-}
-
-var configs = map[int]config{
-	4: {
-		blockSize: 4,
-		folds:     4,
-		degree:    2,
-		rules:     5,
-	},
-	8: {
-		blockSize: 8,
-		folds:     8,
-		degree:    2,
-		rules:     3,
-	},
-	16: {
-		blockSize: 16,
-		folds:     16,
-		degree:    2,
-		rules:     3,
-	},
-}
-
-func GenerateKey(blockSize int) (*PrivateKey, error) {
-	cfg, ok := configs[blockSize]
-
-	if !ok {
-		return nil, errors.New("Unsupported block size")
+func GenerateKey() (*PrivateKey, error) {
+	k := &PrivateKey{
+		ca: invertible.NewCA(),
 	}
 
-	caSize := field.ElementsInBytes(blockSize)
-	ca := invertible.NewCA(caSize, cfg.folds, cfg.degree, cfg.rules)
-
-	return &PrivateKey{blockSize, ca}, nil
+	if err := k.ca.Generate(rand.Reader); err != nil {
+		return nil, err
+	}
+	return k, nil
 }
 
-func (k *PrivateKey) Decrypt(dst, src []byte) {
-	if len(src)%k.blockSize != 0 {
-		panic("Size of cipher text must be a multiple of cipher block size")
+func LoadPrivateKey(src io.Reader) (*PrivateKey, error) {
+	k := &PrivateKey{
+		ca: invertible.NewCA(),
 	}
 
-	tmp := make([]field.Element, field.ElementsInBytes(k.blockSize))
-
-	for i := range len(src) / k.blockSize {
-		from := k.blockSize * i
-		to := k.blockSize * (i + 1)
-
-		field.ReadElements(tmp, src[from:to])
-
-		k.ca.ApplyInverse(tmp)
-
-		field.WriteElements(dst[from:to], tmp)
+	if err := k.ca.Load(src); err != nil {
+		return nil, err
 	}
+	return k, nil
 }
 
-func (k *PrivateKey) Public() *PublicKey {
-	ca := k.ca.ToGeneral()
-	return &PublicKey{k.blockSize, ca}
+// Decrypt decrypts the full contents of src into dst.
+// Both slices must be sized to a multiple of your block size.
+// Returns an error if the lengths are mismatched or invalid.
+func (k *PrivateKey) Decrypt(dst, src []byte) error {
+	if len(src)%automata.BlockBytes != 0 || len(dst) < len(src) {
+		return errors.New("invalid buffer size")
+	}
+
+	for i := 0; i < len(src); i += automata.BlockBytes {
+		srcBlock := automata.LoadBlock(src[i : i+automata.BlockBytes])
+		k.ca.Revert(srcBlock)
+		srcBlock.WriteTo(dst[i : i+automata.BlockBytes])
+	}
+	return nil
+}
+
+func (k *PrivateKey) encrypt(dst, src []byte) error {
+	if len(src)%automata.BlockBytes != 0 || len(dst) < len(src) {
+		return errors.New("invalid buffer size")
+	}
+
+	for i := 0; i < len(src); i += automata.BlockBytes {
+		srcBlock := automata.LoadBlock(src[i : i+automata.BlockBytes])
+		k.ca.Apply(srcBlock)
+		srcBlock.WriteTo(dst[i : i+automata.BlockBytes])
+	}
+	return nil
 }
