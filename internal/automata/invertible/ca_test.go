@@ -18,8 +18,9 @@ func TestCAInvertibility(t *testing.T) {
 
 	for range 10 {
 		block := &automata.Block{
-			rng.Uint64(),
-			rng.Uint64(),
+			rng.Uint32(),
+			rng.Uint32(),
+			rng.Uint32(),
 		}
 
 		original := *block

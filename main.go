@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	pt := []byte("Hello, world!!!!")
+	pt := []byte("Hello world!")
 
 	fmt.Println("Plain text     ", hex.EncodeToString(pt))
 

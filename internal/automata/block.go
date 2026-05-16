@@ -4,32 +4,34 @@ import (
 	"encoding/binary"
 )
 
-type Block [2]uint64
+type Block [3]uint32
 type Bit uint8
 
 func LoadBlock(src []byte) *Block {
 	_ = src[BlockBytes-1] // BCE check
 
 	return &Block{
-		binary.LittleEndian.Uint64(src[0:8]),
-		binary.LittleEndian.Uint64(src[8:16]),
+		binary.LittleEndian.Uint32(src[0:4]),
+		binary.LittleEndian.Uint32(src[4:8]),
+		binary.LittleEndian.Uint32(src[8:12]),
 	}
 }
 
 func (b *Block) WriteTo(dst []byte) {
 	_ = dst[BlockBytes-1] // BCE check
 
-	binary.LittleEndian.PutUint64(dst[0:8], b[0])
-	binary.LittleEndian.PutUint64(dst[8:16], b[1])
+	binary.LittleEndian.PutUint32(dst[0:4], b[0])
+	binary.LittleEndian.PutUint32(dst[4:8], b[1])
+	binary.LittleEndian.PutUint32(dst[8:12], b[2])
 }
 
 func (b *Block) At(idx uint8) Bit {
-	return Bit((b[idx>>6] >> (idx & 63)) & 1)
+	return Bit((b[idx/32] >> (idx % 32)) & 1)
 }
 
 func (b *Block) SetAt(idx uint8, bit Bit) {
-	wordIdx := idx >> 6
-	shift := idx & 63
+	wordIdx := idx / 32
+	shift := idx % 32
 
-	b[wordIdx] = (b[wordIdx] &^ (uint64(1) << shift)) | uint64(bit&1)<<shift
+	b[wordIdx] = (b[wordIdx] &^ (uint32(1) << shift)) | uint32(bit&1)<<shift
 }

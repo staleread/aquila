@@ -1,6 +1,6 @@
 package automata
 
 const (
-	BlockSize  = 128
+	BlockSize  = 96
 	BlockBytes = BlockSize / 8
 )

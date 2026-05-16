@@ -7,7 +7,7 @@ import (
 func TestBlockSetAt(t *testing.T) {
 	var b Block
 
-	idx := uint8(120)
+	idx := uint8(90)
 	bit := Bit(1)
 
 	b.SetAt(idx, bit)
