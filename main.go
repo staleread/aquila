@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
+
+	"github.com/staleread/aquila/asym"
 )
 
 func main() {
@@ -10,14 +12,14 @@ func main() {
 
 	fmt.Println("Plain text     ", hex.EncodeToString(pt))
 
-	priv, err := GenerateKey()
+	priv, err := asym.GenerateKey()
 
 	if err != nil {
 		panic(err.Error())
 	}
 
 	ct := make([]byte, len(pt))
-	priv.encrypt(ct, pt)
+	priv.Encrypt(ct, pt)
 	fmt.Println("Cipher text    ", hex.EncodeToString(ct))
 
 	dec := make([]byte, len(pt))

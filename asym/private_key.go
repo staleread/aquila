@@ -1,4 +1,4 @@
-package main
+package asym
 
 import (
 	"crypto/rand"
@@ -51,7 +51,7 @@ func (k *PrivateKey) Decrypt(dst, src []byte) error {
 	return nil
 }
 
-func (k *PrivateKey) encrypt(dst, src []byte) error {
+func (k *PrivateKey) Encrypt(dst, src []byte) error {
 	if len(src)%automata.BlockBytes != 0 || len(dst) < len(src) {
 		return errors.New("invalid buffer size")
 	}
