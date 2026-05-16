@@ -33,18 +33,26 @@ func (ca *CA) Generate(rnd io.Reader) error {
 	return nil
 }
 
-func (ca *CA) Apply(block *automata.Block) {
+func (ca *CA) Apply(dst, src []byte) {
+	block := automata.LoadBlock(src)
+
 	for i := range RulesCount {
 		rule := ca.getRule(i)
 		rule.Apply(block)
 	}
+
+	block.WriteTo(dst)
 }
 
-func (ca *CA) Revert(block *automata.Block) {
+func (ca *CA) Revert(dst, src []byte) {
+	block := automata.LoadBlock(src)
+
 	for i := RulesCount - 1; i >= 0; i-- {
 		rule := ca.getRule(i)
 		rule.Revert(block)
 	}
+
+	block.WriteTo(dst)
 }
 
 func (ca *CA) getRule(idx int) Rule {

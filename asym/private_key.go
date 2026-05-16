@@ -1,7 +1,6 @@
 package asym
 
 import (
-	"crypto/rand"
 	"errors"
 	"io"
 
@@ -10,33 +9,29 @@ import (
 )
 
 type PrivateKey struct {
-	ca *invertible.CA
+	ca InvertibleCA
 }
 
-func GenerateKey() (*PrivateKey, error) {
-	k := &PrivateKey{
-		ca: invertible.NewCA(),
-	}
+func GenerateKey(rnd io.Reader) (*PrivateKey, error) {
+	ca := invertible.NewCA()
 
-	if err := k.ca.Generate(rand.Reader); err != nil {
+	if err := ca.Generate(rnd); err != nil {
 		return nil, err
 	}
-	return k, nil
+	return &PrivateKey{ca}, nil
 }
 
 func LoadPrivateKey(src io.Reader) (*PrivateKey, error) {
-	k := &PrivateKey{
-		ca: invertible.NewCA(),
-	}
+	ca := invertible.NewCA()
 
-	if err := k.ca.Load(src); err != nil {
+	if err := ca.Load(src); err != nil {
 		return nil, err
 	}
-	return k, nil
+	return &PrivateKey{ca}, nil
 }
 
-// Decrypt decrypts the full contents of src into dst.
-// Both slices must be sized to a multiple of your block size.
+// Decrypts the full contents of src into dst.
+// Both slices must be sized to a multiple of BlockBytes.
 // Returns an error if the lengths are mismatched or invalid.
 func (k *PrivateKey) Decrypt(dst, src []byte) error {
 	if len(src)%automata.BlockBytes != 0 || len(dst) < len(src) {
@@ -44,22 +39,25 @@ func (k *PrivateKey) Decrypt(dst, src []byte) error {
 	}
 
 	for i := 0; i < len(src); i += automata.BlockBytes {
-		srcBlock := automata.LoadBlock(src[i : i+automata.BlockBytes])
-		k.ca.Revert(srcBlock)
-		srcBlock.WriteTo(dst[i : i+automata.BlockBytes])
+		k.ca.Revert(dst[i:i+automata.BlockBytes], src[i:i+automata.BlockBytes])
 	}
 	return nil
 }
 
+// Encrypts the full contents of src into dst.
+// Both slices must be sized to a multiple of BlockBytes.
+// Returns an error if the lengths are mismatched or invalid.
 func (k *PrivateKey) Encrypt(dst, src []byte) error {
 	if len(src)%automata.BlockBytes != 0 || len(dst) < len(src) {
 		return errors.New("invalid buffer size")
 	}
 
 	for i := 0; i < len(src); i += automata.BlockBytes {
-		srcBlock := automata.LoadBlock(src[i : i+automata.BlockBytes])
-		k.ca.Apply(srcBlock)
-		srcBlock.WriteTo(dst[i : i+automata.BlockBytes])
+		k.ca.Apply(dst[i:i+automata.BlockBytes], src[i:i+automata.BlockBytes])
 	}
+	return nil
+}
+
+func (k *PrivateKey) Public() *PublicKey {
 	return nil
 }

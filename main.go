@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rand"
 	"encoding/hex"
 	"fmt"
 
@@ -12,7 +13,7 @@ func main() {
 
 	fmt.Println("Plain text     ", hex.EncodeToString(pt))
 
-	priv, err := asym.GenerateKey()
+	priv, err := asym.GenerateKey(rand.Reader)
 
 	if err != nil {
 		panic(err.Error())
