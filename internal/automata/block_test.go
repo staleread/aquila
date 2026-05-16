@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestBlock_SetAt(t *testing.T) {
+func TestBlockSetAt(t *testing.T) {
 	var b Block
 
 	idx := uint8(120)
