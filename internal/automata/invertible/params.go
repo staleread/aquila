@@ -5,10 +5,10 @@ import "github.com/staleread/aquila/internal/automata"
 const (
 	VectorSize       = 16
 	ConfusionDegree  = 3
-	ConfusionMapSize = ConfusionDegree * (ConfusionDegree + 1) / 2 * VectorSize
+	ConfusionMapSize = (ConfusionDegree*(ConfusionDegree+1)/2 - 1) * VectorSize
 	PermutationSize  = automata.BlockSize
 	FoldsCount       = automata.BlockSize / VectorSize
-	RulesCount       = 2
+	RulesCount       = 3
 
 	SLEBytes          = VectorSize * VectorSize / 8
 	ConfusionMapBytes = ConfusionMapSize

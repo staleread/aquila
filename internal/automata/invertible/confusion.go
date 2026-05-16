@@ -28,7 +28,7 @@ func (m *ConfusionMap) Generate(rnd io.Reader, maxSub Subscript, perm *Permutati
 
 	subIdx := 0
 	for range VectorSize {
-		for j := ConfusionDegree; j > 0; j-- {
+		for j := ConfusionDegree; j > 1; j-- {
 			upperBound := int(maxSub) - j
 
 			for k := range j {
@@ -60,7 +60,7 @@ func (m *ConfusionMap) Eval(state *automata.Block) Vector {
 	for i := range VectorSize {
 		var sum Vector
 
-		for j := range ConfusionDegree {
+		for j := range ConfusionDegree - 1 {
 			prod := Vector(1)
 			subCnt := ConfusionDegree - j
 

@@ -14,11 +14,10 @@ func TestConfusionMapEval(t *testing.T) {
 	confArena := make([]byte, invertible.ConfusionMapBytes)
 	m := invertible.NewConfusionMap(confArena)
 
-	// y0 = x0*x1*x2 + x3*x4 + x5
+	// y0 = x0*x1*x2 + x3*x4
 	fixture := make([]byte, invertible.ConfusionMapBytes)
 	fixture[0], fixture[1], fixture[2] = 0, 1, 2
 	fixture[3], fixture[4] = 3, 4
-	fixture[5] = 5
 	fixtureGen := bytes.NewReader(fixture)
 
 	maxSub := invertible.Subscript(invertible.VectorSize)
@@ -28,7 +27,7 @@ func TestConfusionMapEval(t *testing.T) {
 	}
 
 	// Verify initialization
-	expectedIds := []byte{0, 1, 2, 3, 4, 5}
+	expectedIds := []byte{0, 1, 2, 3, 4}
 	for i, exp := range expectedIds {
 		if confArena[i] != exp {
 			t.Fatalf("Index at %d: got %d, expected %d", i, confArena[i], exp)
@@ -41,24 +40,24 @@ func TestConfusionMapEval(t *testing.T) {
 		expectedBit uint8
 	}{
 		{
-			name:        "All zeros -> 0^0^0 = 0",
+			name:        "All zeros -> 0^0 = 0",
 			activeBits:  []uint8{},
 			expectedBit: 0,
 		},
 		{
-			name:        "Only bit 5 is set -> 0^0^1 = 1",
+			name:        "Only bit 5 is set -> 0^0 = 0",
 			activeBits:  []uint8{5},
-			expectedBit: 1,
-		},
-		{
-			name:        "Bits 3, 4, and 5 are set -> 0^1^1 = 0",
-			activeBits:  []uint8{3, 4, 5},
 			expectedBit: 0,
 		},
 		{
-			name:        "Bits 0, 1, 2, 3, 4, 5 are set -> 1^1^1 = 1",
-			activeBits:  []uint8{0, 1, 2, 3, 4, 5},
+			name:        "Bits 3 and 4 are set -> 0^1 = 1",
+			activeBits:  []uint8{3, 4},
 			expectedBit: 1,
+		},
+		{
+			name:        "Bits 0, 1, 2, 3, 4 are set -> 1^1 = 0",
+			activeBits:  []uint8{0, 1, 2, 3, 4},
+			expectedBit: 0,
 		},
 	}
 
