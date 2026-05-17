@@ -1,9 +1,9 @@
 package general
 
 type MonomialHeapItem struct {
-	Prod      Monomial
-	FirstIdx  int
-	SecondIdx int
+	Prod Monomial
+	I    int
+	J    int
 }
 
 // Max heap for storing monomial products.
@@ -15,14 +15,6 @@ type MonomialMaxHeap struct {
 
 func (h *MonomialMaxHeap) Len() int {
 	return h.size
-}
-
-// Add heap element without the swim phase.
-// Useful for creating an initial state and calling Heapify()
-// Which is O(n) compared to O(n * log n) insertion using Push()
-func (h *MonomialMaxHeap) Append(prod MonomialHeapItem) {
-	h.data[h.size] = prod
-	h.size++
 }
 
 func (h *MonomialMaxHeap) Push(prod MonomialHeapItem) {
@@ -40,12 +32,6 @@ func (h *MonomialMaxHeap) Pop() MonomialHeapItem {
 	h.swap(0, h.size)
 	h.sink(0)
 	return h.data[h.size]
-}
-
-func (h *MonomialMaxHeap) Heapify() {
-	for i := (h.size / 2) - 1; i >= 0; i-- {
-		h.sink(i)
-	}
 }
 
 func (h *MonomialMaxHeap) more(i, j int) bool {
