@@ -10,10 +10,10 @@ func AddPolynomials(dst, p1, p2 []automata.Word) []automata.Word {
 	var ptr1, ptr2 int
 
 	for ptr1 < len(p1) && ptr2 < len(p2) {
-		monomA := NewMonomial(p1[ptr1 : ptr1+automata.BlockWords])
-		monomB := NewMonomial(p2[ptr2 : ptr2+automata.BlockWords])
+		m1 := NewMonomial(p1[ptr1 : ptr1+automata.BlockWords])
+		m2 := NewMonomial(p2[ptr2 : ptr2+automata.BlockWords])
 
-		cmp := CompareMonomials(monomA, monomB)
+		cmp := CompareMonomials(m1, m2)
 
 		switch {
 		case cmp > 0:
