@@ -9,7 +9,7 @@ import (
 )
 
 type PrivateKey struct {
-	ca InvertibleCA
+	dec BlockDecrypter
 }
 
 func GenerateKey(rnd io.Reader) (*PrivateKey, error) {
@@ -39,7 +39,7 @@ func (k *PrivateKey) Decrypt(dst, src []byte) error {
 	}
 
 	for i := 0; i < len(src); i += automata.BlockBytes {
-		k.ca.Revert(dst[i:i+automata.BlockBytes], src[i:i+automata.BlockBytes])
+		k.dec.Revert(dst[i:i+automata.BlockBytes], src[i:i+automata.BlockBytes])
 	}
 	return nil
 }
@@ -53,7 +53,7 @@ func (k *PrivateKey) Encrypt(dst, src []byte) error {
 	}
 
 	for i := 0; i < len(src); i += automata.BlockBytes {
-		k.ca.Apply(dst[i:i+automata.BlockBytes], src[i:i+automata.BlockBytes])
+		k.dec.Apply(dst[i:i+automata.BlockBytes], src[i:i+automata.BlockBytes])
 	}
 	return nil
 }

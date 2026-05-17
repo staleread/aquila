@@ -1,10 +1,10 @@
 package asym
 
-type GeneralCA interface {
+type BlockEncrypter interface {
 	Apply(dst, src []byte)
 }
 
-type InvertibleCA interface {
-	GeneralCA
+type BlockDecrypter interface {
+	BlockEncrypter
 	Revert(dst, src []byte)
 }
