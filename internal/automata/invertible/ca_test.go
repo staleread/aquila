@@ -1,6 +1,7 @@
 package invertible_test
 
 import (
+	"bytes"
 	"math/rand"
 	"testing"
 
@@ -16,23 +17,24 @@ func TestCAInvertibility(t *testing.T) {
 		t.Fatalf("Failed to generate CA: %v", err)
 	}
 
+	src := make([]byte, automata.BlockBytes)
+	intermediate := make([]byte, automata.BlockBytes)
+	reverted := make([]byte, automata.BlockBytes)
+
 	for range 10 {
-		block := &automata.Block{
-			rng.Uint32(),
-			rng.Uint32(),
-			rng.Uint32(),
-		}
+		rng.Read(src)
 
-		original := *block
+		original := make([]byte, automata.BlockBytes)
+		copy(original, src)
 
-		ca.Apply(block)
-		if *block == original {
+		ca.Apply(intermediate, src)
+		if bytes.Equal(intermediate, src) {
 			t.Errorf("Apply did not change the block (highly unlikely)")
 		}
 
-		ca.Revert(block)
-		if *block != original {
-			t.Errorf("Revert failed: original=%v, reverted=%v", original, block)
+		ca.Revert(reverted, intermediate)
+		if !bytes.Equal(reverted, original) {
+			t.Errorf("Revert failed: original=%v, reverted=%v", original, reverted)
 		}
 	}
 }
