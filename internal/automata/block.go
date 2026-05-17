@@ -4,7 +4,9 @@ import (
 	"encoding/binary"
 )
 
-type Block [3]uint32
+type Word = uint32
+type Block [BlockWords]Word
+
 type Bit uint8
 
 func LoadBlock(src []byte) *Block {
@@ -33,5 +35,5 @@ func (b *Block) SetAt(idx uint8, bit Bit) {
 	wordIdx := idx / 32
 	shift := idx % 32
 
-	b[wordIdx] = (b[wordIdx] &^ (uint32(1) << shift)) | uint32(bit&1)<<shift
+	b[wordIdx] = (b[wordIdx] &^ (Word(1) << shift)) | Word(bit&1)<<shift
 }
