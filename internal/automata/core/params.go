@@ -2,7 +2,7 @@ package core
 
 const (
 	BlockSize     = 96
-	BlockWords    = 3
-	BlockWordSize = BlockSize / BlockWords
+	BlockWordSize = 32
+	BlockWords    = BlockSize / BlockWordSize
 	BlockBytes    = BlockSize / 8
 )

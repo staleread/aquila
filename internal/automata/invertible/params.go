@@ -7,7 +7,7 @@ import (
 
 const (
 	FoldsCount             = core.BlockSize / math.VectorSize
-	RulesCount             = 3
+	RulesCount             = 2
 	SymbolicPolynomialSize = math.VectorSize + math.ConfusionDegree - 1
 
 	MaxFoldMonomials             = (math.VectorSize + math.ConfusionDegree - 1) * math.VectorSize
