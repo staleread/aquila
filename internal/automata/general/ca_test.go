@@ -20,7 +20,7 @@ func TestCACompilationCorrectness(t *testing.T) {
 		t.Fatalf("Failed to generate invertible CA: %v", err)
 	}
 
-	genCA, err := invCA.General()
+	genCA, err := invCA.DeriveGeneralCA()
 	if err != nil {
 		t.Fatalf("Failed to compile CA: %v", err)
 	}

@@ -45,6 +45,7 @@ func (r *Rule) Generate(rnd io.Reader) error {
 
 func (r *Rule) Apply(state *core.Block) {
 	perm := r.getPermutation()
+	var srcState core.Block = *state
 
 	for i := range FoldsCount {
 		fold := r.getFold(i)
@@ -52,7 +53,7 @@ func (r *Rule) Apply(state *core.Block) {
 		in := perm.Gather(state, i)
 
 		out := fold.sle.Eval(in)
-		out ^= fold.confusion.Eval(state)
+		out ^= fold.confusion.Eval(&srcState)
 
 		perm.Scatter(state, i, out)
 	}
@@ -61,7 +62,7 @@ func (r *Rule) Apply(state *core.Block) {
 func (r *Rule) Revert(state *core.Block) {
 	perm := r.getPermutation()
 
-	for i := FoldsCount - 1; i >= 0; i-- {
+	for i := range FoldsCount {
 		fold := r.getFold(i)
 
 		in := perm.Gather(state, i)

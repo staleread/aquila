@@ -82,9 +82,6 @@ func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 	sumScratchArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
 
 	for i := range core.BlockSize {
-		if i%8 == 0 {
-			fmt.Printf("Compiling bit %d/%d (masterArena: %d monomials)\n", i, core.BlockSize, len(masterArena))
-		}
 		stateArena = stateArena[:0]
 		stateArena = append(stateArena, polynomials.GetPolynomial(RulesCount-1, i)...)
 
