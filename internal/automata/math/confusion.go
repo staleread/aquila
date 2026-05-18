@@ -13,8 +13,12 @@ type ConfusionMap struct {
 	Data []Subscript
 }
 
-func NewConfusionMap(arena []byte) *ConfusionMap {
-	return &ConfusionMap{Data: arena}
+func NewConfusionMap(arena []byte) ConfusionMap {
+	return ConfusionMap{Data: arena}
+}
+
+func EmptyConfusionMap() ConfusionMap {
+	return ConfusionMap{Data: nil}
 }
 
 func (m *ConfusionMap) Generate(rnd io.Reader, maxSub Subscript, perm *Permutation) error {
@@ -50,7 +54,7 @@ func (m *ConfusionMap) Generate(rnd io.Reader, maxSub Subscript, perm *Permutati
 }
 
 func (m *ConfusionMap) Eval(state *core.Block) Vector {
-	if m == nil {
+	if m == nil || len(m.Data) == 0 {
 		return Vector(0)
 	}
 

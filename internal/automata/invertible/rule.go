@@ -12,8 +12,8 @@ type Rule struct {
 }
 
 type Fold struct {
-	sle       *math.SLE
-	confusion *math.ConfusionMap
+	sle       math.SLE
+	confusion math.ConfusionMap
 }
 
 func (r *Rule) Generate(rnd io.Reader) error {
@@ -78,7 +78,7 @@ func (r *Rule) getFold(idx int) Fold {
 	if idx == 0 {
 		return Fold{
 			sle:       math.NewSLE(r.arena[:LinearFoldBytes]),
-			confusion: nil,
+			confusion: math.EmptyConfusionMap(),
 		}
 	}
 

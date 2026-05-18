@@ -9,10 +9,10 @@ type SLE struct {
 	data []Vector
 }
 
-func NewSLE(arena []byte) *SLE {
+func NewSLE(arena []byte) SLE {
 	data := unsafe.Slice((*Vector)(unsafe.Pointer(&arena[0])), len(arena)/2)
 
-	return &SLE{data}
+	return SLE{data}
 }
 
 func (s *SLE) Generate(rnd io.Reader) error {

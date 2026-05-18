@@ -57,7 +57,7 @@ func CompileRegistry(ca *CA) *SymbolicRegistry {
 			}
 
 			// Confusion part
-			if f > 0 && fold.confusion != nil {
+			if f > 0 && len(fold.confusion.Data) > 0 {
 				const SubsPerBit = 5
 				subIdx := i * SubsPerBit
 
