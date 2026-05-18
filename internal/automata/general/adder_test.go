@@ -3,51 +3,50 @@ package general_test
 import (
 	"testing"
 
-	"github.com/staleread/aquila/internal/automata"
 	"github.com/staleread/aquila/internal/automata/general"
 )
 
 func TestAddPolynomials(t *testing.T) {
 	tests := []struct {
 		name     string
-		p1, p2   []automata.Word
-		expected []automata.Word
+		p1, p2   []general.Monomial
+		expected []general.Monomial
 	}{
 		{
 			name:     "Both empty",
-			p1:       []automata.Word{},
-			p2:       []automata.Word{},
-			expected: []automata.Word{},
+			p1:       []general.Monomial{},
+			p2:       []general.Monomial{},
+			expected: []general.Monomial{},
 		},
 		{
 			name:     "One empty",
-			p1:       []automata.Word{4, 0, 0, 1, 0, 0},
-			p2:       []automata.Word{},
-			expected: []automata.Word{4, 0, 0, 1, 0, 0},
+			p1:       []general.Monomial{{4, 0, 0}, {1, 0, 0}},
+			p2:       []general.Monomial{},
+			expected: []general.Monomial{{4, 0, 0}, {1, 0, 0}},
 		},
 		{
 			name:     "Disjoint sets",
-			p1:       []automata.Word{8, 0, 0, 2, 0, 0},
-			p2:       []automata.Word{4, 0, 0, 1, 0, 0},
-			expected: []automata.Word{8, 0, 0, 4, 0, 0, 2, 0, 0, 1, 0, 0},
+			p1:       []general.Monomial{{8, 0, 0}, {2, 0, 0}},
+			p2:       []general.Monomial{{4, 0, 0}, {1, 0, 0}},
+			expected: []general.Monomial{{8, 0, 0}, {4, 0, 0}, {2, 0, 0}, {1, 0, 0}},
 		},
 		{
 			name:     "Identical (full cancellation)",
-			p1:       []automata.Word{4, 0, 0, 1, 0, 0},
-			p2:       []automata.Word{4, 0, 0, 1, 0, 0},
-			expected: []automata.Word{},
+			p1:       []general.Monomial{{4, 0, 0}, {1, 0, 0}},
+			p2:       []general.Monomial{{4, 0, 0}, {1, 0, 0}},
+			expected: []general.Monomial{},
 		},
 		{
 			name:     "Partial overlap",
-			p1:       []automata.Word{8, 0, 0, 4, 0, 0},
-			p2:       []automata.Word{4, 0, 0, 1, 0, 0},
-			expected: []automata.Word{8, 0, 0, 1, 0, 0}, // 4 cancels
+			p1:       []general.Monomial{{8, 0, 0}, {4, 0, 0}},
+			p2:       []general.Monomial{{4, 0, 0}, {1, 0, 0}},
+			expected: []general.Monomial{{8, 0, 0}, {1, 0, 0}}, // 4 cancels
 		},
 		{
 			name:     "Interleaved",
-			p1:       []automata.Word{16, 0, 0, 4, 0, 0, 1, 0, 0},
-			p2:       []automata.Word{8, 0, 0, 4, 0, 0, 2, 0, 0},
-			expected: []automata.Word{16, 0, 0, 8, 0, 0, 2, 0, 0, 1, 0, 0},
+			p1:       []general.Monomial{{16, 0, 0}, {4, 0, 0}, {1, 0, 0}},
+			p2:       []general.Monomial{{8, 0, 0}, {4, 0, 0}, {2, 0, 0}},
+			expected: []general.Monomial{{16, 0, 0}, {8, 0, 0}, {2, 0, 0}, {1, 0, 0}},
 		},
 	}
 
@@ -61,7 +60,7 @@ func TestAddPolynomials(t *testing.T) {
 
 			for i := range got {
 				if got[i] != tt.expected[i] {
-					t.Errorf("At index %d: got %d, want %d", i, got[i], tt.expected[i])
+					t.Errorf("At index %d: got %v, want %v", i, got[i], tt.expected[i])
 				}
 			}
 		})
