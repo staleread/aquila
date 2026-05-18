@@ -33,7 +33,7 @@ func Decode(src io.Reader) (*AquilaBlock, error) {
 	return &AquilaBlock{ca}, nil
 }
 
-func (b *AquilaBlock) BlockSize() int          { return core.BlockSize }
+func (b *AquilaBlock) BlockSize() int          { return core.BlockBytes }
 func (b *AquilaBlock) Encrypt(dst, src []byte) { b.ca.Apply(dst, src) }
 func (b *AquilaBlock) Decrypt(dst, src []byte) { b.ca.Revert(dst, src) }
 
