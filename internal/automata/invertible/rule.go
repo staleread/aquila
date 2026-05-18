@@ -3,7 +3,8 @@ package invertible
 import (
 	"io"
 
-	"github.com/staleread/aquila/internal/automata"
+	"github.com/staleread/aquila/internal/automata/core"
+	"github.com/staleread/aquila/internal/automata/math"
 )
 
 type Rule struct {
@@ -11,13 +12,13 @@ type Rule struct {
 }
 
 type Fold struct {
-	sle       *SLE
-	confusion *ConfusionMap
+	sle       *math.SLE
+	confusion *math.ConfusionMap
 }
 
 func (r *Rule) Generate(rnd io.Reader) error {
 	perm := r.getPermutation()
-	entropyBuf := r.arena[:PermutationBytes-1]
+	entropyBuf := r.arena[:math.PermutationBytes-1]
 
 	if err := perm.Generate(rnd, entropyBuf); err != nil {
 		return err
@@ -34,7 +35,7 @@ func (r *Rule) Generate(rnd io.Reader) error {
 			continue
 		}
 
-		maxSub := Subscript(i * VectorSize)
+		maxSub := math.Subscript(i * math.VectorSize)
 		if err := fold.confusion.Generate(rnd, maxSub, perm); err != nil {
 			return err
 		}
@@ -42,7 +43,7 @@ func (r *Rule) Generate(rnd io.Reader) error {
 	return nil
 }
 
-func (r *Rule) Apply(state *automata.Block) {
+func (r *Rule) Apply(state *core.Block) {
 	perm := r.getPermutation()
 
 	for i := range FoldsCount {
@@ -57,7 +58,7 @@ func (r *Rule) Apply(state *automata.Block) {
 	}
 }
 
-func (r *Rule) Revert(state *automata.Block) {
+func (r *Rule) Revert(state *core.Block) {
 	perm := r.getPermutation()
 
 	for i := FoldsCount - 1; i >= 0; i-- {
@@ -73,10 +74,9 @@ func (r *Rule) Revert(state *automata.Block) {
 }
 
 func (r *Rule) getFold(idx int) Fold {
-	// First fold only has linear part
 	if idx == 0 {
 		return Fold{
-			sle:       NewSLE(r.arena[:LinearFoldBytes]),
+			sle:       math.NewSLE(r.arena[:LinearFoldBytes]),
 			confusion: nil,
 		}
 	}
@@ -84,15 +84,15 @@ func (r *Rule) getFold(idx int) Fold {
 	offset := LinearFoldBytes + (idx-1)*FoldBytes
 
 	return Fold{
-		sle:       NewSLE(r.arena[offset : offset+SLEBytes]),
-		confusion: NewConfusionMap(r.arena[offset+SLEBytes : offset+FoldBytes]),
+		sle:       math.NewSLE(r.arena[offset : offset+math.SLEBytes]),
+		confusion: math.NewConfusionMap(r.arena[offset+math.SLEBytes : offset+FoldBytes]),
 	}
 }
 
-func (r *Rule) getPermutation() *Permutation {
+func (r *Rule) getPermutation() *math.Permutation {
 	const offset = RuleFoldsBytes
 
-	view := r.arena[offset : offset+PermutationBytes]
+	view := r.arena[offset : offset+math.PermutationBytes]
 
-	return NewPermutation(view)
+	return math.NewPermutation(view)
 }

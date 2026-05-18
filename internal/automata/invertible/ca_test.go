@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/staleread/aquila/internal/automata"
+	"github.com/staleread/aquila/internal/automata/core"
 	"github.com/staleread/aquila/internal/automata/invertible"
 )
 
@@ -17,14 +17,14 @@ func TestCAInvertibility(t *testing.T) {
 		t.Fatalf("Failed to generate CA: %v", err)
 	}
 
-	src := make([]byte, automata.BlockBytes)
-	intermediate := make([]byte, automata.BlockBytes)
-	reverted := make([]byte, automata.BlockBytes)
+	src := make([]byte, core.BlockBytes)
+	intermediate := make([]byte, core.BlockBytes)
+	reverted := make([]byte, core.BlockBytes)
 
 	for range 10 {
 		rng.Read(src)
 
-		original := make([]byte, automata.BlockBytes)
+		original := make([]byte, core.BlockBytes)
 		copy(original, src)
 
 		ca.Apply(intermediate, src)

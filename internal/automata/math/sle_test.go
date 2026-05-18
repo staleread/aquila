@@ -1,15 +1,15 @@
-package invertible_test
+package math_test
 
 import (
 	"math/rand"
 	"testing"
 
-	"github.com/staleread/aquila/internal/automata/invertible"
+	"github.com/staleread/aquila/internal/automata/math"
 )
 
 func TestSLEEvalSolve(t *testing.T) {
-	arena := make([]byte, invertible.SLEBytes)
-	sle := invertible.NewSLE(arena)
+	arena := make([]byte, math.SLEBytes)
+	sle := math.NewSLE(arena)
 
 	rng := rand.New(rand.NewSource(42))
 
@@ -18,7 +18,7 @@ func TestSLEEvalSolve(t *testing.T) {
 	}
 
 	for range 100 {
-		x := invertible.Vector(rng.Uint32())
+		x := math.Vector(rng.Uint32())
 
 		y := sle.Eval(x)
 		xPrime := sle.Solve(y)

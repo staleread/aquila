@@ -1,4 +1,4 @@
-package automata
+package core
 
 const (
 	BlockSize     = 96

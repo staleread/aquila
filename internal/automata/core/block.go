@@ -1,4 +1,4 @@
-package automata
+package core
 
 import (
 	"encoding/binary"

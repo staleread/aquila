@@ -4,26 +4,34 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"os"
 
-	"github.com/staleread/aquila/asym"
+	"github.com/staleread/aquila/sym"
 )
+
+const keyFile = "aquila.key"
 
 func main() {
 	pt := []byte("Hello world!")
 
-	fmt.Println("Plain text     ", hex.EncodeToString(pt))
+	fmt.Println("Plain text    ", hex.EncodeToString(pt))
 
-	priv, err := asym.GenerateKey(rand.Reader)
-
-	if err != nil {
-		panic(err.Error())
+	var block *sym.AquilaBlock
+	if f, err := os.Open(keyFile); err == nil {
+		block, _ = sym.Decode(f)
+		f.Close()
+	} else {
+		block, _ = sym.New(rand.Reader)
+		f, _ := os.Create(keyFile)
+		block.Encode(f)
+		f.Close()
 	}
 
 	ct := make([]byte, len(pt))
-	priv.Encrypt(ct, pt)
+	block.Encrypt(ct, pt)
 	fmt.Println("Cipher text    ", hex.EncodeToString(ct))
 
 	dec := make([]byte, len(pt))
-	priv.Decrypt(dec, ct)
+	block.Decrypt(dec, ct)
 	fmt.Println("Decrypted  text", hex.EncodeToString(dec))
 }

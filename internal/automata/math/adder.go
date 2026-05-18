@@ -1,4 +1,4 @@
-package general
+package math
 
 // Adds two pre-sorted polinomials using two-pointer merge
 // Appends the resulting monomials to the 'dst' buffer.

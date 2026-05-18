@@ -1,26 +1,26 @@
-package invertible_test
+package math_test
 
 import (
 	"bytes"
 	"testing"
 
-	"github.com/staleread/aquila/internal/automata"
-	"github.com/staleread/aquila/internal/automata/invertible"
+	"github.com/staleread/aquila/internal/automata/core"
+	"github.com/staleread/aquila/internal/automata/math"
 )
 
 func TestConfusionMapEval(t *testing.T) {
 	perm := getIdentityPermutation()
 
-	confArena := make([]byte, invertible.ConfusionMapBytes)
-	m := invertible.NewConfusionMap(confArena)
+	confArena := make([]byte, math.ConfusionMapBytes)
+	m := math.NewConfusionMap(confArena)
 
 	// y0 = x0*x1*x2 + x3*x4
-	fixture := make([]byte, invertible.ConfusionMapBytes)
+	fixture := make([]byte, math.ConfusionMapBytes)
 	fixture[0], fixture[1], fixture[2] = 0, 1, 2
 	fixture[3], fixture[4] = 3, 4
 	fixtureGen := bytes.NewReader(fixture)
 
-	maxSub := invertible.Subscript(invertible.VectorSize)
+	maxSub := math.Subscript(math.VectorSize)
 
 	if err := m.Generate(fixtureGen, maxSub, perm); err != nil {
 		t.Fatalf("Failed to generate confusion map: %v", err)
@@ -63,7 +63,7 @@ func TestConfusionMapEval(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			b := &automata.Block{}
+			b := &core.Block{}
 
 			for _, bit := range tc.activeBits {
 				b.SetAt(bit, 1)
@@ -79,11 +79,11 @@ func TestConfusionMapEval(t *testing.T) {
 	}
 }
 
-func getIdentityPermutation() *invertible.Permutation {
-	permArena := make([]byte, invertible.PermutationBytes)
+func getIdentityPermutation() *math.Permutation {
+	permArena := make([]byte, math.PermutationBytes)
 
 	for i := range len(permArena) {
-		permArena[i] = invertible.Subscript(i)
+		permArena[i] = math.Subscript(i)
 	}
-	return invertible.NewPermutation(permArena)
+	return math.NewPermutation(permArena)
 }

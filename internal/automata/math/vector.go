@@ -1,4 +1,4 @@
-package invertible
+package math
 
 import "math/bits"
 

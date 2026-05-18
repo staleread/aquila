@@ -1,14 +1,16 @@
-package automata
+package core_test
 
 import (
 	"testing"
+
+	"github.com/staleread/aquila/internal/automata/core"
 )
 
 func TestBlockSetAt(t *testing.T) {
-	var b Block
+	var b core.Block
 
 	idx := 90
-	bit := Word(1)
+	bit := core.Word(1)
 
 	b.SetAt(idx, bit)
 

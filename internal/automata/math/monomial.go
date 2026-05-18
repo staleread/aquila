@@ -1,14 +1,14 @@
-package general
+package math
 
 import (
 	"math/bits"
 
-	"github.com/staleread/aquila/internal/automata"
+	"github.com/staleread/aquila/internal/automata/core"
 )
 
-type Monomial [3]automata.Word
+type Monomial [3]core.Word
 
-func NewMonomial(words []automata.Word) Monomial {
+func NewMonomial(words []core.Word) Monomial {
 	_ = words[2] // BCE hint
 
 	return Monomial{
@@ -34,24 +34,24 @@ func CompareMonomials(a, b Monomial) int {
 func (m Monomial) FirstSubscript() int {
 	for i := range m {
 		if m[i] != 0 {
-			return i*automata.BlockWordSize + bits.TrailingZeros32(m[i])
+			return i*core.BlockWordSize + bits.TrailingZeros32(m[i])
 		}
 	}
-	return automata.BlockSize
+	return core.BlockSize
 }
 
 func (m Monomial) NextSubscript(start int) int {
-	if start >= automata.BlockSize {
-		return automata.BlockSize
+	if start >= core.BlockSize {
+		return core.BlockSize
 	}
 
-	startWordIdx := start / automata.BlockWordSize
+	startWordIdx := start / core.BlockWordSize
 
 	if word := m[startWordIdx]; word != 0 {
-		startSubIdx := start % automata.BlockWordSize
+		startSubIdx := start % core.BlockWordSize
 		word >>= startSubIdx
 
-		for j := range automata.BlockWordSize - startSubIdx {
+		for j := range core.BlockWordSize - startSubIdx {
 			if (word>>j)&1 == 1 {
 				return start + j
 			}
@@ -60,10 +60,10 @@ func (m Monomial) NextSubscript(start int) int {
 
 	for i := startWordIdx + 1; i < len(m); i++ {
 		if m[i] != 0 {
-			return i*automata.BlockWordSize + bits.TrailingZeros32(m[i])
+			return i*core.BlockWordSize + bits.TrailingZeros32(m[i])
 		}
 	}
-	return automata.BlockSize
+	return core.BlockSize
 }
 
 func (m Monomial) Degree() int {
@@ -78,7 +78,7 @@ func (m Monomial) Mul(other Monomial) Monomial {
 	}
 }
 
-func (m Monomial) Eval(b *automata.Block) automata.Word {
+func (m Monomial) Eval(b *core.Block) core.Word {
 	if b[0]&m[0] == m[0] &&
 		b[1]&m[1] == m[1] &&
 		b[2]&m[2] == m[2] {
