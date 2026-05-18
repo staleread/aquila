@@ -36,27 +36,27 @@ func TestConfusionMapEval(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		activeBits  []uint8
+		activeBits  []int
 		expectedBit uint8
 	}{
 		{
 			name:        "All zeros -> 0^0 = 0",
-			activeBits:  []uint8{},
+			activeBits:  []int{},
 			expectedBit: 0,
 		},
 		{
 			name:        "Only bit 5 is set -> 0^0 = 0",
-			activeBits:  []uint8{5},
+			activeBits:  []int{5},
 			expectedBit: 0,
 		},
 		{
 			name:        "Bits 3 and 4 are set -> 0^1 = 1",
-			activeBits:  []uint8{3, 4},
+			activeBits:  []int{3, 4},
 			expectedBit: 1,
 		},
 		{
 			name:        "Bits 0, 1, 2, 3, 4 are set -> 1^1 = 0",
-			activeBits:  []uint8{0, 1, 2, 3, 4},
+			activeBits:  []int{0, 1, 2, 3, 4},
 			expectedBit: 0,
 		},
 	}

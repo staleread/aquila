@@ -65,7 +65,7 @@ func (m *ConfusionMap) Eval(state *automata.Block) Vector {
 			subCnt := ConfusionDegree - j
 
 			for range subCnt {
-				bit := state.At(m.data[subIdx])
+				bit := state.At(int(m.data[subIdx]))
 				prod &= Vector(bit)
 
 				subIdx++

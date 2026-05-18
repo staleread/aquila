@@ -78,7 +78,7 @@ func (m Monomial) Mul(other Monomial) Monomial {
 	}
 }
 
-func (m Monomial) Eval(b *automata.Block) automata.Bit {
+func (m Monomial) Eval(b *automata.Block) automata.Word {
 	if b[0]&m[0] == m[0] &&
 		b[1]&m[1] == m[1] &&
 		b[2]&m[2] == m[2] {

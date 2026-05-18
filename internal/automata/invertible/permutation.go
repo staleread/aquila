@@ -40,8 +40,8 @@ func (p *Permutation) Gather(b *automata.Block, foldIdx int) Vector {
 	offset := foldIdx * VectorSize
 
 	for i := range VectorSize {
-		bit := b.At(p.data[offset+i])
-		res |= Vector(bit) << i
+		idx := int(p.data[offset+i])
+		res |= Vector(b.At(idx)) << i
 	}
 	return res
 }
@@ -50,7 +50,8 @@ func (p *Permutation) Scatter(b *automata.Block, foldIdx int, v Vector) {
 	offset := foldIdx * VectorSize
 
 	for i := range VectorSize {
-		bit := automata.Bit((v >> i) & 1)
-		b.SetAt(p.data[offset+i], bit)
+		idx := int(p.data[offset+i])
+		bit := automata.Word((v >> i) & 1)
+		b.SetAt(idx, bit)
 	}
 }

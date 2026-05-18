@@ -27,13 +27,13 @@ func (b *Block) WriteTo(dst []byte) {
 	binary.LittleEndian.PutUint32(dst[8:12], b[2])
 }
 
-func (b *Block) At(idx uint8) Bit {
-	return Bit((b[idx/32] >> (idx % 32)) & 1)
+func (b *Block) At(idx int) Word {
+	return (b[idx/32] >> (idx % 32)) & 1
 }
 
-func (b *Block) SetAt(idx uint8, bit Bit) {
+func (b *Block) SetAt(idx int, bit Word) {
 	wordIdx := idx / 32
 	shift := idx % 32
 
-	b[wordIdx] = (b[wordIdx] &^ (Word(1) << shift)) | Word(bit&1)<<shift
+	b[wordIdx] = (b[wordIdx] &^ (Word(1) << shift)) | (bit&1)<<shift
 }
