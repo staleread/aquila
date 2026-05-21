@@ -16,6 +16,7 @@
     ),
     justify: true,
     leading: 1.5em,
+    spacing: 1.5em
   )
   
   let fontSize = 14pt;
