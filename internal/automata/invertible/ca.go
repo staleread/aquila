@@ -85,15 +85,17 @@ func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 		stateArena = stateArena[:0]
 		stateArena = append(stateArena, polynomials.GetPolynomial(RulesCount-1, i)...)
 
+		var subs [core.BlockSize]uint8
 		for j := RulesCount - 2; j >= 0; j-- {
 			for _, monom := range stateArena {
-				degree := monom.Degree()
+				subsSlice := monom.Subscripts(subs[:0])
+				degree := len(subsSlice)
 
 				if degree == 0 {
 					continue
 				}
 
-				firstSubscript := monom.FirstSubscript()
+				firstSubscript := int(subsSlice[0])
 				firstPoly := polynomials.GetPolynomial(j, firstSubscript)
 
 				if degree == 1 {
@@ -107,16 +109,8 @@ func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 				prodSrcArena = prodSrcArena[:0]
 				prodSrcArena = append(prodSrcArena, firstPoly...)
 
-				currentSub := firstSubscript
-
-				for {
-					currentSub = monom.NextSubscript(currentSub + 1)
-
-					if currentSub == core.BlockSize {
-						break
-					}
-
-					nextPoly := polynomials.GetPolynomial(j, currentSub)
+				for _, sub := range subsSlice[1:] {
+					nextPoly := polynomials.GetPolynomial(j, int(sub))
 
 					prodDstArena = math.MultiplyPolynomials(prodDstArena, prodSrcArena, nextPoly)
 
