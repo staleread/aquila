@@ -1,4 +1,4 @@
-//go:build comp2 || (!comp3 && !comp4)
+//go:build comp1 || (!comp2 && !comp3)
 
 package invertible
 

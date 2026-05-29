@@ -1,4 +1,4 @@
-//go:build sle8 || !sle16
+//go:build fold8 || !fold16
 
 package math
 

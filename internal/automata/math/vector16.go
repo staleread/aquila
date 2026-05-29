@@ -1,4 +1,4 @@
-//go:build sle16
+//go:build fold16
 
 package math
 
