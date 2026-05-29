@@ -4,8 +4,8 @@ import (
 	"crypto/cipher"
 	"io"
 
-	"github.com/staleread/aquila/internal/automata/core"
 	"github.com/staleread/aquila/internal/automata/invertible"
+	"github.com/staleread/aquila/internal/automata/state"
 )
 
 var _ cipher.Block = (*AquilaBlock)(nil)
@@ -33,8 +33,8 @@ func Decode(src io.Reader) (*AquilaBlock, error) {
 	return &AquilaBlock{ca}, nil
 }
 
-func (b *AquilaBlock) BlockSize() int          { return core.BlockBytes }
+func (b *AquilaBlock) Encode(dst io.Writer) error { return b.ca.Save(dst) }
+
+func (b *AquilaBlock) BlockSize() int          { return state.StateBytes }
 func (b *AquilaBlock) Encrypt(dst, src []byte) { b.ca.Apply(dst, src) }
 func (b *AquilaBlock) Decrypt(dst, src []byte) { b.ca.Revert(dst, src) }
-
-func (b *AquilaBlock) Encode(dst io.Writer) error { return b.ca.Save(dst) }

@@ -4,27 +4,32 @@ import (
 	"io"
 	"slices"
 
-	"github.com/staleread/aquila/internal/automata/core"
+	"github.com/staleread/aquila/internal/automata/state"
 )
 
-const (
-	ConfusionDegree   = 2
-	ConfusionMapBytes = (ConfusionDegree*(ConfusionDegree+1)/2 - 1) * VectorSize
-)
+// #if confusion2
+// const ConfusionDegree = 2
+// #endif
+//
+// #if confusion3
+// const ConfusionDegree = 3
+// #endif
+
+const ConfusionMapBytes = (ConfusionDegree*(ConfusionDegree+1)/2 - 1) * VectorSize
 
 type ConfusionMap struct {
-	Data []core.Subscript
+	Data []state.Subscript
 }
 
 func NewConfusionMap(arena []byte) ConfusionMap {
-	return ConfusionMap{Data: []core.Subscript(arena)}
+	return ConfusionMap{Data: []state.Subscript(arena)}
 }
 
 func EmptyConfusionMap() ConfusionMap {
 	return ConfusionMap{Data: nil}
 }
 
-func (m *ConfusionMap) Generate(rnd io.Reader, maxSub core.Subscript, perm *Permutation) error {
+func (m *ConfusionMap) Generate(rnd io.Reader, maxSub state.Subscript, perm *Permutation) error {
 	if _, err := io.ReadFull(rnd, m.Data); err != nil {
 		return err
 	}
@@ -56,7 +61,7 @@ func (m *ConfusionMap) Generate(rnd io.Reader, maxSub core.Subscript, perm *Perm
 	return nil
 }
 
-func (m *ConfusionMap) Eval(state core.Block) Vector {
+func (m *ConfusionMap) Eval(s state.State) Vector {
 	if m == nil || len(m.Data) == 0 {
 		return Vector(0)
 	}
@@ -72,7 +77,7 @@ func (m *ConfusionMap) Eval(state core.Block) Vector {
 			subCnt := ConfusionDegree - j
 
 			for range subCnt {
-				bit := state.At(m.Data[subIdx])
+				bit := s.At(m.Data[subIdx])
 				prod &= Vector(bit)
 
 				subIdx++

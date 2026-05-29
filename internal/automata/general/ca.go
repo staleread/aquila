@@ -4,13 +4,13 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/staleread/aquila/internal/automata/core"
 	"github.com/staleread/aquila/internal/automata/math"
+	"github.com/staleread/aquila/internal/automata/state"
 )
 
 type CA struct {
 	Arena   []math.Monomial
-	Offsets [core.BlockSize - 1]uint32
+	Offsets [state.StateSize - 1]uint32
 }
 
 func (ca *CA) GetPolynomial(idx int) []math.Monomial {
@@ -19,26 +19,26 @@ func (ca *CA) GetPolynomial(idx int) []math.Monomial {
 		start = ca.Offsets[idx-1]
 	}
 	end := uint32(len(ca.Arena))
-	if idx < core.BlockSize-1 {
+	if idx < state.StateSize-1 {
 		end = ca.Offsets[idx]
 	}
 	return ca.Arena[start:end]
 }
 
 func (ca *CA) Apply(dst, src []byte) {
-	var srcBlock core.Block
-	srcBlock.Read(src)
-	var dstBlock core.Block
+	var srcState state.State
+	srcState.Read(src)
+	var dstState state.State
 
-	for i := range core.BlockSize {
+	for i := range state.StateSize {
 		var res uint8
 
 		for _, monom := range ca.GetPolynomial(i) {
-			res ^= monom.Eval(srcBlock)
+			res ^= monom.Eval(srcState)
 		}
-		dstBlock.SetAt(core.Subscript(i), res)
+		dstState.SetAt(state.Subscript(i), res)
 	}
-	dstBlock.Write(dst)
+	dstState.Write(dst)
 }
 
 func (ca *CA) Save(dst io.Writer) error {

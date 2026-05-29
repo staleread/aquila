@@ -5,9 +5,9 @@ import (
 	"errors"
 	"io"
 
-	"github.com/staleread/aquila/internal/automata/core"
 	"github.com/staleread/aquila/internal/automata/general"
 	"github.com/staleread/aquila/internal/automata/invertible"
+	"github.com/staleread/aquila/internal/automata/state"
 )
 
 var _ crypto.Decrypter = (*PrivateKey)(nil)
@@ -41,13 +41,13 @@ func DecodePrivateKey(src io.Reader) (*PrivateKey, error) {
 }
 
 func (k *PrivateKey) Decrypt(rand io.Reader, msg []byte, opts crypto.DecrypterOpts) (plaintext []byte, err error) {
-	if len(msg)%core.BlockBytes != 0 {
+	if len(msg)%state.StateBytes != 0 {
 		return nil, errors.New("invalid ciphertext length")
 	}
 
 	plaintext = make([]byte, len(msg))
-	for i := 0; i < len(msg); i += core.BlockBytes {
-		k.ca.Revert(plaintext[i:i+core.BlockBytes], msg[i:i+core.BlockBytes])
+	for i := 0; i < len(msg); i += state.StateBytes {
+		k.ca.Revert(plaintext[i:i+state.StateBytes], msg[i:i+state.StateBytes])
 	}
 
 	return plaintext, nil
@@ -70,13 +70,13 @@ func DecodePublicKey(src io.Reader) (*PublicKey, error) {
 }
 
 func (k *PublicKey) Encrypt(rand io.Reader, msg []byte) (ciphertext []byte, err error) {
-	if len(msg)%core.BlockBytes != 0 {
+	if len(msg)%state.StateBytes != 0 {
 		return nil, errors.New("invalid plaintext length")
 	}
 
 	ciphertext = make([]byte, len(msg))
-	for i := 0; i < len(msg); i += core.BlockBytes {
-		k.ca.Apply(ciphertext[i:i+core.BlockBytes], msg[i:i+core.BlockBytes])
+	for i := 0; i < len(msg); i += state.StateBytes {
+		k.ca.Apply(ciphertext[i:i+state.StateBytes], msg[i:i+state.StateBytes])
 	}
 
 	return ciphertext, nil

@@ -3,12 +3,12 @@ package math_test
 import (
 	"testing"
 
-	"github.com/staleread/aquila/internal/automata/core"
 	"github.com/staleread/aquila/internal/automata/math"
+	"github.com/staleread/aquila/internal/automata/state"
 )
 
 func TestNewMonomial(t *testing.T) {
-	subs := []core.Subscript{0, 1, 2}
+	subs := []state.Subscript{0, 1, 2}
 	m := math.NewMonomial(subs...)
 
 	got := m.Subscripts(nil)
@@ -97,7 +97,7 @@ func TestMonomial_Eval(t *testing.T) {
 
 	tests := []struct {
 		name string
-		b    core.Block
+		b    state.State
 		want uint8
 	}{
 		{"exact match", b0, 1},
@@ -114,8 +114,8 @@ func TestMonomial_Eval(t *testing.T) {
 	}
 }
 
-func blockWith(subs ...core.Subscript) core.Block {
-	var b core.Block
+func blockWith(subs ...state.Subscript) state.State {
+	var b state.State
 	for _, i := range subs {
 		b.SetAt(i, 1)
 	}

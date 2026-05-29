@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/staleread/aquila/internal/automata/core"
 	"github.com/staleread/aquila/internal/automata/general"
 	"github.com/staleread/aquila/internal/automata/math"
+	"github.com/staleread/aquila/internal/automata/state"
 )
 
-const InitialArenaCapacity = 7_929
+const (
+	InitialArenaCapacity = 7_929
+	RuleBytes            = RuleFoldsBytes + math.PermutationBytes
+	CABytes              = RuleBytes * RulesCount
+)
 
 type CA struct {
 	arena []byte
@@ -43,7 +47,7 @@ func (ca *CA) Generate(rnd io.Reader) error {
 }
 
 func (ca *CA) Apply(dst, src []byte) {
-	var block core.Block
+	var block state.State
 	block.Read(src)
 
 	for i := range RulesCount {
@@ -55,7 +59,7 @@ func (ca *CA) Apply(dst, src []byte) {
 }
 
 func (ca *CA) Revert(dst, src []byte) {
-	var block core.Block
+	var block state.State
 	block.Read(src)
 
 	for i := RulesCount - 1; i >= 0; i-- {
@@ -76,8 +80,8 @@ func (ca *CA) getRule(idx int) Rule {
 
 func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 	polynomials := CompileRegistry(ca)
-	masterArena := make([]math.Monomial, 0, InitialArenaCapacity*core.BlockSize)
-	var offsets [core.BlockSize - 1]uint32
+	masterArena := make([]math.Monomial, 0, InitialArenaCapacity*state.StateSize)
+	var offsets [state.StateSize - 1]uint32
 
 	stateArena := make([]math.Monomial, 0, InitialArenaCapacity)
 	prodSrcArena := make([]math.Monomial, 0, InitialArenaCapacity)
@@ -85,11 +89,11 @@ func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 	sumArena := make([]math.Monomial, 0, InitialArenaCapacity)
 	sumScratchArena := make([]math.Monomial, 0, InitialArenaCapacity)
 
-	for i := range core.BlockSize {
+	for i := range state.StateSize {
 		stateArena = stateArena[:0]
 		stateArena = append(stateArena, polynomials.GetPolynomial(RulesCount-1, i)...)
 
-		var subs [core.BlockSize]uint8
+		var subs [state.StateSize]uint8
 		for j := RulesCount - 2; j >= 0; j-- {
 			for _, monom := range stateArena {
 				subsSlice := monom.Subscripts(subs[:0])

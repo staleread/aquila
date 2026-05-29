@@ -3,14 +3,14 @@ package math
 import (
 	"io"
 
-	"github.com/staleread/aquila/internal/automata/core"
+	"github.com/staleread/aquila/internal/automata/state"
 )
 
-const PermutationSize = core.BlockSize
+const PermutationSize = state.StateSize
 const PermutationBytes = PermutationSize
 
 type Permutation struct {
-	Data []core.Subscript
+	Data []state.Subscript
 }
 
 func NewPermutation(arena []byte) *Permutation {
@@ -20,7 +20,7 @@ func NewPermutation(arena []byte) *Permutation {
 }
 
 func (p *Permutation) Generate(rnd io.Reader, tmp []byte) error {
-	const n core.Subscript = PermutationSize
+	const n state.Subscript = PermutationSize
 
 	for i := range n {
 		p.Data[i] = i
@@ -38,7 +38,7 @@ func (p *Permutation) Generate(rnd io.Reader, tmp []byte) error {
 	return nil
 }
 
-func (p *Permutation) Gather(b *core.Block, foldIdx int) Vector {
+func (p *Permutation) Gather(b *state.State, foldIdx int) Vector {
 	var res Vector
 	offset := foldIdx * VectorSize
 
@@ -49,7 +49,7 @@ func (p *Permutation) Gather(b *core.Block, foldIdx int) Vector {
 	return res
 }
 
-func (p *Permutation) Scatter(b *core.Block, foldIdx int, v Vector) {
+func (p *Permutation) Scatter(b *state.State, foldIdx int, v Vector) {
 	offset := foldIdx * VectorSize
 
 	for i := range VectorSize {

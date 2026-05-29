@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/staleread/aquila/internal/automata/core"
 	"github.com/staleread/aquila/internal/automata/invertible"
+	"github.com/staleread/aquila/internal/automata/state"
 )
 
 func TestCACompilationCorrectness(t *testing.T) {
@@ -25,9 +25,9 @@ func TestCACompilationCorrectness(t *testing.T) {
 		t.Fatalf("Failed to compile CA: %v", err)
 	}
 
-	src := make([]byte, core.BlockBytes)
-	got := make([]byte, core.BlockBytes)
-	want := make([]byte, core.BlockBytes)
+	src := make([]byte, state.StateBytes)
+	got := make([]byte, state.StateBytes)
+	want := make([]byte, state.StateBytes)
 
 	for range 5 {
 		rng.Read(src)

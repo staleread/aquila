@@ -3,14 +3,23 @@ package invertible
 import (
 	"slices"
 
-	"github.com/staleread/aquila/internal/automata/core"
 	"github.com/staleread/aquila/internal/automata/math"
+	"github.com/staleread/aquila/internal/automata/state"
+)
+
+const (
+	FoldsCount             = state.StateSize / math.VectorSize
+	SymbolicPolynomialSize = math.VectorSize + math.ConfusionDegree - 1
+	MaxFoldMonomials       = (math.VectorSize + math.ConfusionDegree - 1) * math.VectorSize
+	MaxLinearFoldMonomials = math.VectorSize * math.VectorSize
+	MaxRuleMonomials       = MaxLinearFoldMonomials + MaxFoldMonomials*(FoldsCount-1)
+	MaxCAMonomials         = MaxRuleMonomials * RulesCount
 )
 
 type SymbolicRegistry struct {
 	arena    []math.Monomial
-	offsets  [RulesCount][core.BlockSize + 1]uint32
-	invPerms [RulesCount][core.BlockSize]uint8
+	offsets  [RulesCount][state.StateSize + 1]uint32
+	invPerms [RulesCount][state.StateSize]uint8
 }
 
 func (e *SymbolicRegistry) GetPolynomial(ruleIdx, bitIdx int) []math.Monomial {
@@ -31,7 +40,7 @@ func CompileRegistry(ca *CA) *SymbolicRegistry {
 
 		var sleCoefs [math.VectorSize]math.Vector
 
-		for k := range core.BlockSize {
+		for k := range state.StateSize {
 			f := k / math.VectorSize
 			i := k % math.VectorSize
 			b := perm.Data[k]
@@ -78,7 +87,7 @@ func CompileRegistry(ca *CA) *SymbolicRegistry {
 
 			e.arena = append(e.arena, monomials...)
 		}
-		e.offsets[r][core.BlockSize] = uint32(len(e.arena))
+		e.offsets[r][state.StateSize] = uint32(len(e.arena))
 	}
 
 	return e
