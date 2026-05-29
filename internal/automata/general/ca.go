@@ -26,18 +26,19 @@ func (ca *CA) GetPolynomial(idx int) []math.Monomial {
 }
 
 func (ca *CA) Apply(dst, src []byte) {
-	srcBlock := core.LoadBlock(src)
+	var srcBlock core.Block
+	srcBlock.Read(src)
 	var dstBlock core.Block
 
 	for i := range core.BlockSize {
-		var res core.Word
+		var res uint8
 
 		for _, monom := range ca.GetPolynomial(i) {
 			res ^= monom.Eval(srcBlock)
 		}
-		dstBlock.SetAt(i, res)
+		dstBlock.SetAt(core.Subscript(i), res)
 	}
-	dstBlock.WriteTo(dst)
+	dstBlock.Write(dst)
 }
 
 func (ca *CA) Save(dst io.Writer) error {

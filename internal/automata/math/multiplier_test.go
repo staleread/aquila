@@ -22,43 +22,35 @@ func TestPolynomialMultiplier_Multiply(t *testing.T) {
 		{
 			name:     "Empty polynomials",
 			p1:       []math.Monomial{},
-			p2:       []math.Monomial{{1, 0, 0}},
+			p2:       []math.Monomial{math.NewMonomial(0)},
 			expected: []math.Monomial{},
 		},
 		{
 			name:     "Single monomial multiplication",
-			p1:       []math.Monomial{{1, 0, 0}}, // x0
-			p2:       []math.Monomial{{2, 0, 0}}, // x1
-			expected: []math.Monomial{{3, 0, 0}}, // x0*x1 = bit 0 | bit 1 = 3
+			p1:       []math.Monomial{math.NewMonomial(0)},    // x0
+			p2:       []math.Monomial{math.NewMonomial(1)},    // x1
+			expected: []math.Monomial{math.NewMonomial(0, 1)}, // x0*x1
 		},
 		{
 			name: "Basic distribution (x0 + x1) * x2",
-			p1:   []math.Monomial{{2, 0, 0}, {1, 0, 0}}, // x1, x0 (descending)
-			p2:   []math.Monomial{{4, 0, 0}},            // x2
+			p1:   []math.Monomial{math.NewMonomial(1), math.NewMonomial(0)}, // x1, x0 (descending)
+			p2:   []math.Monomial{math.NewMonomial(2)},                      // x2
 			// (x1+x0)*x2 = x1x2 + x0x2
-			// x1x2 = 2|4 = 6
-			// x0x2 = 1|4 = 5
-			expected: []math.Monomial{{6, 0, 0}, {5, 0, 0}},
+			expected: []math.Monomial{math.NewMonomial(1, 2), math.NewMonomial(0, 2)},
 		},
 		{
 			name: "Cancellation x0 * (x0 + x1) = x0 + x0x1",
-			p1:   []math.Monomial{{1, 0, 0}},
-			p2:   []math.Monomial{{2, 0, 0}, {1, 0, 0}}, // x1, x0
-			// x0*x1 = 3
-			// x0*x0 = 1
-			expected: []math.Monomial{{3, 0, 0}, {1, 0, 0}},
+			p1:   []math.Monomial{math.NewMonomial(0)},
+			p2:   []math.Monomial{math.NewMonomial(1), math.NewMonomial(0)}, // x1, x0
+			// x0*x1 = x0x1, x0*x0 = x0
+			expected: []math.Monomial{math.NewMonomial(0, 1), math.NewMonomial(0)},
 		},
 		{
 			name: "Duplicate cancellation (x0 + x1) * (x0 + x1) = x0 + x1 + x0x1 + x0x1 = x0 + x1",
-			p1:   []math.Monomial{{2, 0, 0}, {1, 0, 0}},
-			p2:   []math.Monomial{{2, 0, 0}, {1, 0, 0}},
-			// x1*x1 = 2
-			// x1*x0 = 3
-			// x0*x1 = 3
-			// x0*x0 = 1
-			// Sorted descending before cancellation: 3, 3, 2, 1
-			// After cancellation: 2, 1
-			expected: []math.Monomial{{2, 0, 0}, {1, 0, 0}},
+			p1:   []math.Monomial{math.NewMonomial(1), math.NewMonomial(0)},
+			p2:   []math.Monomial{math.NewMonomial(1), math.NewMonomial(0)},
+			// x1*x1=x1, x1*x0=x0x1, x0*x1=x0x1, x0*x0=x0 → x0x1 cancels
+			expected: []math.Monomial{math.NewMonomial(1), math.NewMonomial(0)},
 		},
 	}
 

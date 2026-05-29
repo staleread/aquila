@@ -7,14 +7,13 @@ import (
 
 const (
 	FoldsCount             = core.BlockSize / math.VectorSize
-	RulesCount             = 2
+	RulesCount             = 3
 	SymbolicPolynomialSize = math.VectorSize + math.ConfusionDegree - 1
 
-	MaxFoldMonomials             = (math.VectorSize + math.ConfusionDegree - 1) * math.VectorSize
-	MaxLinearFoldMonomials       = math.VectorSize * math.VectorSize
-	MaxRuleMonomials             = MaxLinearFoldMonomials + MaxFoldMonomials*(FoldsCount-1)
-	MaxCAMonomials               = MaxRuleMonomials * RulesCount
-	EstimatedDensePolynomialSize = 4096
+	MaxFoldMonomials       = (math.VectorSize + math.ConfusionDegree - 1) * math.VectorSize
+	MaxLinearFoldMonomials = math.VectorSize * math.VectorSize
+	MaxRuleMonomials       = MaxLinearFoldMonomials + MaxFoldMonomials*(FoldsCount-1)
+	MaxCAMonomials         = MaxRuleMonomials * RulesCount
 
 	LinearFoldBytes = math.SLEBytes
 	FoldBytes       = math.SLEBytes + math.ConfusionMapBytes

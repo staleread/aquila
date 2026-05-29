@@ -6,8 +6,11 @@ import (
 	"github.com/staleread/aquila/internal/automata/core"
 )
 
+const PermutationSize = core.BlockSize
+const PermutationBytes = PermutationSize
+
 type Permutation struct {
-	Data []Subscript
+	Data []core.Subscript
 }
 
 func NewPermutation(arena []byte) *Permutation {
@@ -17,7 +20,7 @@ func NewPermutation(arena []byte) *Permutation {
 }
 
 func (p *Permutation) Generate(rnd io.Reader, tmp []byte) error {
-	const n Subscript = PermutationSize
+	const n core.Subscript = PermutationSize
 
 	for i := range n {
 		p.Data[i] = i
@@ -40,7 +43,7 @@ func (p *Permutation) Gather(b *core.Block, foldIdx int) Vector {
 	offset := foldIdx * VectorSize
 
 	for i := range VectorSize {
-		idx := int(p.Data[offset+i])
+		idx := p.Data[offset+i]
 		res |= Vector(b.At(idx)) << i
 	}
 	return res
@@ -50,8 +53,8 @@ func (p *Permutation) Scatter(b *core.Block, foldIdx int, v Vector) {
 	offset := foldIdx * VectorSize
 
 	for i := range VectorSize {
-		idx := int(p.Data[offset+i])
-		bit := core.Word((v >> i) & 1)
+		idx := p.Data[offset+i]
+		bit := uint8((v >> i) & 1)
 		b.SetAt(idx, bit)
 	}
 }

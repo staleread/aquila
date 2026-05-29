@@ -9,6 +9,8 @@ import (
 	"github.com/staleread/aquila/internal/automata/math"
 )
 
+const InitialArenaCapacity = 7_929
+
 type CA struct {
 	arena []byte
 }
@@ -41,25 +43,27 @@ func (ca *CA) Generate(rnd io.Reader) error {
 }
 
 func (ca *CA) Apply(dst, src []byte) {
-	block := core.LoadBlock(src)
+	var block core.Block
+	block.Read(src)
 
 	for i := range RulesCount {
 		rule := ca.getRule(i)
-		rule.Apply(block)
+		rule.Apply(&block)
 	}
 
-	block.WriteTo(dst)
+	block.Write(dst)
 }
 
 func (ca *CA) Revert(dst, src []byte) {
-	block := core.LoadBlock(src)
+	var block core.Block
+	block.Read(src)
 
 	for i := RulesCount - 1; i >= 0; i-- {
 		rule := ca.getRule(i)
-		rule.Revert(block)
+		rule.Revert(&block)
 	}
 
-	block.WriteTo(dst)
+	block.Write(dst)
 }
 
 func (ca *CA) getRule(idx int) Rule {
@@ -72,14 +76,14 @@ func (ca *CA) getRule(idx int) Rule {
 
 func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 	polynomials := CompileRegistry(ca)
-	masterArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
+	masterArena := make([]math.Monomial, 0, InitialArenaCapacity*core.BlockSize)
 	var offsets [core.BlockSize - 1]uint32
 
-	stateArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
-	prodSrcArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
-	prodDstArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
-	sumArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
-	sumScratchArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
+	stateArena := make([]math.Monomial, 0, InitialArenaCapacity)
+	prodSrcArena := make([]math.Monomial, 0, InitialArenaCapacity)
+	prodDstArena := make([]math.Monomial, 0, InitialArenaCapacity)
+	sumArena := make([]math.Monomial, 0, InitialArenaCapacity)
+	sumScratchArena := make([]math.Monomial, 0, InitialArenaCapacity)
 
 	for i := range core.BlockSize {
 		stateArena = stateArena[:0]

@@ -35,7 +35,7 @@ func (r *Rule) Generate(rnd io.Reader) error {
 			continue
 		}
 
-		maxSub := math.Subscript(i * math.VectorSize)
+		maxSub := core.Subscript(i * math.VectorSize)
 		if err := fold.confusion.Generate(rnd, maxSub, perm); err != nil {
 			return err
 		}
@@ -53,7 +53,7 @@ func (r *Rule) Apply(state *core.Block) {
 		in := perm.Gather(state, i)
 
 		out := fold.sle.Eval(in)
-		out ^= fold.confusion.Eval(&srcState)
+		out ^= fold.confusion.Eval(srcState)
 
 		perm.Scatter(state, i, out)
 	}
@@ -67,7 +67,7 @@ func (r *Rule) Revert(state *core.Block) {
 
 		in := perm.Gather(state, i)
 
-		noise := fold.confusion.Eval(state)
+		noise := fold.confusion.Eval(*state)
 		out := fold.sle.Solve(in ^ noise)
 
 		perm.Scatter(state, i, out)
