@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/staleread/aquila/internal/automata/config"
 	"github.com/staleread/aquila/internal/automata/general"
 	"github.com/staleread/aquila/internal/automata/math"
 	"github.com/staleread/aquila/internal/automata/state"
@@ -26,11 +27,17 @@ func NewCA() *CA {
 }
 
 func (ca *CA) Load(src io.Reader) error {
+	if err := config.Current.Check(src); err != nil {
+		return err
+	}
 	_, err := io.ReadFull(src, ca.arena)
 	return err
 }
 
 func (ca *CA) Save(dst io.Writer) error {
+	if err := config.Current.Write(dst); err != nil {
+		return err
+	}
 	_, err := dst.Write(ca.arena)
 	return err
 }

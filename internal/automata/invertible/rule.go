@@ -3,11 +3,13 @@ package invertible
 import (
 	"io"
 
+	"github.com/staleread/aquila/internal/automata/config"
 	"github.com/staleread/aquila/internal/automata/math"
 	"github.com/staleread/aquila/internal/automata/state"
 )
 
 const (
+	RulesCount      = config.CompositionCount + 1
 	LinearFoldBytes = math.SLEBytes
 	FoldBytes       = math.SLEBytes + math.ConfusionMapBytes
 	RuleFoldsBytes  = LinearFoldBytes + FoldBytes*(FoldsCount-1)

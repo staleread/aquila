@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 
+	"github.com/staleread/aquila/internal/automata/config"
 	"github.com/staleread/aquila/internal/automata/math"
 	"github.com/staleread/aquila/internal/automata/state"
 )
@@ -42,6 +43,9 @@ func (ca *CA) Apply(dst, src []byte) {
 }
 
 func (ca *CA) Save(dst io.Writer) error {
+	if err := config.Current.Write(dst); err != nil {
+		return err
+	}
 	if err := binary.Write(dst, binary.LittleEndian, ca.Offsets); err != nil {
 		return err
 	}
@@ -52,6 +56,10 @@ func (ca *CA) Save(dst io.Writer) error {
 }
 
 func LoadCA(src io.Reader) (*CA, error) {
+	if err := config.Current.Check(src); err != nil {
+		return nil, err
+	}
+
 	ca := &CA{}
 	if err := binary.Read(src, binary.LittleEndian, &ca.Offsets); err != nil {
 		return nil, err
