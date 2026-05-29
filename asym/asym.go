@@ -7,10 +7,16 @@ import (
 
 	"github.com/staleread/aquila/internal/automata/general"
 	"github.com/staleread/aquila/internal/automata/invertible"
+	"github.com/staleread/aquila/internal/automata/math"
 	"github.com/staleread/aquila/internal/automata/state"
 )
 
-const BlockSize = state.StateBytes
+const (
+	BlockSize    = state.StateBytes
+	FoldSize     = math.VectorSize
+	Degree       = math.ConfusionDegree
+	Compositions = invertible.RulesCount - 1
+)
 
 var _ crypto.Decrypter = (*PrivateKey)(nil)
 
