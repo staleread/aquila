@@ -10,6 +10,8 @@ import (
 	"github.com/staleread/aquila/internal/automata/state"
 )
 
+const BlockSize = state.StateBytes
+
 var _ crypto.Decrypter = (*PrivateKey)(nil)
 
 type PrivateKey struct {
