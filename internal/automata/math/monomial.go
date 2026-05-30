@@ -6,6 +6,8 @@ import (
 
 type Monomial state.State
 
+var IdentityMonomial Monomial
+
 func NewMonomial(subs ...state.Subscript) Monomial {
 	var b state.State
 	for _, sub := range subs {
@@ -35,7 +37,7 @@ func (m Monomial) At(sub state.Subscript) uint8 {
 }
 
 func (m Monomial) Eval(b state.State) uint8 {
-	if b.Contains(state.State(m)) {
+	if m == IdentityMonomial || b.Contains(state.State(m)) {
 		return 1
 	}
 	return 0

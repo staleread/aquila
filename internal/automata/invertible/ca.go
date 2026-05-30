@@ -13,11 +13,12 @@ import (
 const (
 	InitialArenaCapacity = 7_929
 	RuleBytes            = RuleFoldsBytes + math.PermutationBytes
-	CABytes              = RuleBytes * RulesCount
+	CABytes              = state.StateBytes + RuleBytes*RulesCount
 )
 
 type CA struct {
 	arena []byte
+	shift state.State
 }
 
 func NewCA() *CA {
@@ -30,8 +31,11 @@ func (ca *CA) Load(src io.Reader) error {
 	if err := config.Current.Check(src); err != nil {
 		return err
 	}
-	_, err := io.ReadFull(src, ca.arena)
-	return err
+	if _, err := io.ReadFull(src, ca.arena); err != nil {
+		return err
+	}
+	ca.shift.Read(ca.arena[:state.StateBytes])
+	return nil
 }
 
 func (ca *CA) Save(dst io.Writer) error {
@@ -43,6 +47,11 @@ func (ca *CA) Save(dst io.Writer) error {
 }
 
 func (ca *CA) Generate(rnd io.Reader) error {
+	if _, err := io.ReadFull(rnd, ca.arena[:state.StateBytes]); err != nil {
+		return fmt.Errorf("failed to generate affine shift: %w", err)
+	}
+	ca.shift.Read(ca.arena[:state.StateBytes])
+
 	for i := range RulesCount {
 		rule := ca.getRule(i)
 
@@ -62,12 +71,15 @@ func (ca *CA) Apply(dst, src []byte) {
 		rule.Apply(&block)
 	}
 
+	block.XorWith(ca.shift)
 	block.Write(dst)
 }
 
 func (ca *CA) Revert(dst, src []byte) {
 	var block state.State
 	block.Read(src)
+
+	block.XorWith(ca.shift)
 
 	for i := RulesCount - 1; i >= 0; i-- {
 		rule := ca.getRule(i)
@@ -78,7 +90,7 @@ func (ca *CA) Revert(dst, src []byte) {
 }
 
 func (ca *CA) getRule(idx int) Rule {
-	offset := idx * RuleBytes
+	offset := state.StateBytes + idx*RuleBytes
 
 	return Rule{
 		arena: ca.arena[offset : offset+RuleBytes],
@@ -145,6 +157,10 @@ func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 		}
 
 		masterArena = append(masterArena, stateArena...)
+
+		if ca.shift.At(state.Subscript(i)) == 1 {
+			masterArena = append(masterArena, math.IdentityMonomial)
+		}
 
 		if i < len(offsets) {
 			offsets[i] = uint32(len(masterArena))

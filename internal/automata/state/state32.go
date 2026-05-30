@@ -55,6 +55,10 @@ func (s State) Or(other State) State {
 	return s | other
 }
 
+func (s *State) XorWith(other State) {
+	*s ^= other
+}
+
 func (s State) Contains(other State) bool {
 	return s&other == other
 }
