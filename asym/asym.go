@@ -70,6 +70,10 @@ func (k *PublicKey) Encode(dst io.Writer) error {
 	return k.ca.Save(dst)
 }
 
+func (k *PublicKey) ExportToANF(w io.Writer) error {
+	return k.ca.ExportToANF(w)
+}
+
 func DecodePublicKey(src io.Reader) (*PublicKey, error) {
 	ca, err := general.LoadCA(src)
 	if err != nil {

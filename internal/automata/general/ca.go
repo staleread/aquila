@@ -2,6 +2,7 @@ package general
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
 
 	"github.com/staleread/aquila/internal/automata/config"
@@ -24,6 +25,14 @@ func (ca *CA) GetPolynomial(idx int) []math.Monomial {
 		end = ca.Offsets[idx]
 	}
 	return ca.Arena[start:end]
+}
+
+func (ca *CA) GetMonomialCounts() []int {
+	counts := make([]int, state.StateSize)
+	for i := range state.StateSize {
+		counts[i] = len(ca.GetPolynomial(i))
+	}
+	return counts
 }
 
 func (ca *CA) Apply(dst, src []byte) {
@@ -73,4 +82,49 @@ func LoadCA(src io.Reader) (*CA, error) {
 		return nil, err
 	}
 	return ca, nil
+}
+
+func (ca *CA) ExportToANF(w io.Writer) error {
+	var subs [state.StateSize]uint8
+
+	for idx := range state.StateSize {
+		poly := ca.GetPolynomial(idx)
+
+		if len(poly) == 0 {
+			if _, err := io.WriteString(w, "0\n"); err != nil {
+				return err
+			}
+			continue
+		}
+
+		for j, monom := range poly {
+			if j > 0 {
+				if _, err := io.WriteString(w, " + "); err != nil {
+					return err
+				}
+			}
+			if monom == math.IdentityMonomial {
+				if _, err := io.WriteString(w, "1"); err != nil {
+					return err
+				}
+				continue
+			}
+
+			subsSlice := monom.Subscripts(subs[:0])
+			for k, sub := range subsSlice {
+				if k > 0 {
+					if _, err := io.WriteString(w, "*"); err != nil {
+						return err
+					}
+				}
+				if _, err := fmt.Fprintf(w, "x%d", sub+1); err != nil {
+					return err
+				}
+			}
+		}
+		if _, err := io.WriteString(w, "\n"); err != nil {
+			return err
+		}
+	}
+	return nil
 }
