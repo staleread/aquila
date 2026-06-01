@@ -89,6 +89,5 @@ func CompileRegistry(ca *CA) *SymbolicRegistry {
 		}
 		e.offsets[r][state.StateSize] = uint32(len(e.arena))
 	}
-
 	return e
 }
