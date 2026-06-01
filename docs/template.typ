@@ -1,6 +1,8 @@
 #let paper(body) = {
   set page(
     paper: "a4",
+    numbering: "1",
+    number-align: right,
     margin: (
       top: 20mm,
       bottom: 20mm,
@@ -15,8 +17,8 @@
       all: true,
     ),
     justify: true,
-    leading: 1.5em,
-    spacing: 1.5em
+    leading: 1em,
+    spacing: 1em
   )
   
   let fontSize = 14pt;
@@ -38,15 +40,9 @@
   
   set figure.caption(separator: [ -- ])
   
-  set heading(numbering: (..nums) => {
-     let numbers = nums.pos()
-     if numbers.len() == 2 {
-        numbering("1.1.", ..numbers)
-     }
-  })
+  set heading(numbering: none)
   
   show heading.where(level: 1): it => {
-    counter(figure).update(0)
     align(center)[
       #set text(size: fontSize)
       #block(
