@@ -30,3 +30,28 @@ func TestEncryptDecrypt(t *testing.T) {
 		t.Errorf("expected %x, got %x", payload, plaintext)
 	}
 }
+
+func TestSignVerify(t *testing.T) {
+	priv, pub, err := asym.GenerateKeyPair(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	digest := make([]byte, asym.BlockSize)
+	rand.Read(digest)
+
+	sig, err := priv.Sign(rand.Reader, digest, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !pub.Verify(digest, sig) {
+		t.Error("verification failed for valid signature")
+	}
+
+	// Corrupt signature
+	sig[0] ^= 1
+	if pub.Verify(digest, sig) {
+		t.Error("verification succeeded for corrupt signature")
+	}
+}
