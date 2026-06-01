@@ -70,8 +70,13 @@ func (k *PublicKey) Encode(dst io.Writer) error {
 	return k.ca.Save(dst)
 }
 
-func (k *PublicKey) ExportToANF(w io.Writer) error {
-	return k.ca.ExportToANF(w)
+func (k *PublicKey) ExportToANF(w io.Writer, input []byte) error {
+	if len(input) != BlockSize {
+		return errors.New("invalid input block length")
+	}
+	var s state.State
+	s.Read(input)
+	return k.ca.ExportToANF(w, s)
 }
 
 func DecodePublicKey(src io.Reader) (*PublicKey, error) {
