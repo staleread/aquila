@@ -1,4 +1,4 @@
-//go:build fold16
+//go:build fold16 || (!fold8 && !fold32)
 
 package math
 
