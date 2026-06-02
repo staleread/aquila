@@ -83,7 +83,7 @@
               <text macro="editor"/>
               <text macro="publisher"/>
             </group>
-            <group prefix=" — " delimiter=". — ">
+            <group prefix=" -- " delimiter=". -- ">
               <text macro="issued-year"/>
               <group delimiter=" ">
                 <text variable="number-of-pages"/>
@@ -96,7 +96,7 @@
               <text variable="container-title"/>
               <text macro="publisher"/>
             </group>
-            <group prefix=" — " delimiter=". — ">
+            <group prefix=" -- " delimiter=". -- ">
               <text macro="issued-year"/>
               <group delimiter=" ">
                 <text term="page" form="short" text-case="capitalize-first"/>
@@ -105,18 +105,18 @@
             </group>
           </else-if>
           <else-if type="webpage post-weblog" match="any">
-            <group prefix=" [Електронний ресурс]. — Режим доступу: ">
+            <group prefix=" [Електронний ресурс]. -- Режим доступу: ">
               <text variable="URL"/>
             </group>
           </else-if>
           <else>
-            <group prefix=" // " delimiter=". — ">
+            <group prefix=" // " delimiter=". -- ">
               <text variable="container-title"/>
               <text macro="issued-year"/>
             </group>
-            <group prefix=" — " delimiter=" ">
+            <group prefix=" -- " delimiter=" ">
               <label variable="page" form="short"/>
-              <text variable="volume" prefix="№ " suffix=". — "/>
+              <text variable="volume" prefix="№ " suffix=". -- "/>
               <text variable="page"/>
             </group>
           </else>

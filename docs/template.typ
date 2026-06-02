@@ -58,6 +58,11 @@
     block(above: 3.5em, below: 2.5em, it)
   }
   
+  show heading.where(level: 3): it => {
+    set text(size: fontSize);
+    block(above: 2em, below: 2em, it)
+  }
+  
   show outline: it => {
     show heading: set align(center)
     it
