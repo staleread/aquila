@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/staleread/aquila/internal/automata/core"
 	"github.com/staleread/aquila/internal/automata/invertible"
+	"github.com/staleread/aquila/internal/automata/state"
 )
 
 func TestDeriveGeneralCA(t *testing.T) {
@@ -22,9 +22,9 @@ func TestDeriveGeneralCA(t *testing.T) {
 		t.Fatalf("Failed to derive general CA: %v", err)
 	}
 
-	src := make([]byte, core.BlockBytes)
-	dstInvertible := make([]byte, core.BlockBytes)
-	dstGeneral := make([]byte, core.BlockBytes)
+	src := make([]byte, state.StateBytes)
+	dstInvertible := make([]byte, state.StateBytes)
+	dstGeneral := make([]byte, state.StateBytes)
 
 	for i := range 5 {
 		rng.Read(src)

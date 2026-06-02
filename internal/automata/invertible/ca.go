@@ -4,13 +4,20 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/staleread/aquila/internal/automata/core"
-	"github.com/staleread/aquila/internal/automata/general"
+	"github.com/staleread/aquila/internal/automata/config"
 	"github.com/staleread/aquila/internal/automata/math"
+	"github.com/staleread/aquila/internal/automata/state"
+)
+
+const (
+	InitialArenaCapacity = 7_929
+	RuleBytes            = RuleFoldsBytes + math.PermutationBytes
+	CABytes              = state.StateBytes + RuleBytes*RulesCount
 )
 
 type CA struct {
 	arena []byte
+	shift state.State
 }
 
 func NewCA() *CA {
@@ -20,16 +27,30 @@ func NewCA() *CA {
 }
 
 func (ca *CA) Load(src io.Reader) error {
-	_, err := io.ReadFull(src, ca.arena)
-	return err
+	if err := config.Current.Check(src); err != nil {
+		return err
+	}
+	if _, err := io.ReadFull(src, ca.arena); err != nil {
+		return err
+	}
+	ca.shift.Read(ca.arena[:state.StateBytes])
+	return nil
 }
 
 func (ca *CA) Save(dst io.Writer) error {
+	if err := config.Current.Write(dst); err != nil {
+		return err
+	}
 	_, err := dst.Write(ca.arena)
 	return err
 }
 
 func (ca *CA) Generate(rnd io.Reader) error {
+	if _, err := io.ReadFull(rnd, ca.arena[:state.StateBytes]); err != nil {
+		return fmt.Errorf("failed to generate affine shift: %w", err)
+	}
+	ca.shift.Read(ca.arena[:state.StateBytes])
+
 	for i := range RulesCount {
 		rule := ca.getRule(i)
 
@@ -41,109 +62,36 @@ func (ca *CA) Generate(rnd io.Reader) error {
 }
 
 func (ca *CA) Apply(dst, src []byte) {
-	block := core.LoadBlock(src)
+	var block state.State
+	block.Read(src)
 
 	for i := range RulesCount {
 		rule := ca.getRule(i)
-		rule.Apply(block)
+		rule.Apply(&block)
 	}
 
-	block.WriteTo(dst)
+	block.XorWith(ca.shift)
+	block.Write(dst)
 }
 
 func (ca *CA) Revert(dst, src []byte) {
-	block := core.LoadBlock(src)
+	var block state.State
+	block.Read(src)
+
+	block.XorWith(ca.shift)
 
 	for i := RulesCount - 1; i >= 0; i-- {
 		rule := ca.getRule(i)
-		rule.Revert(block)
+		rule.Revert(&block)
 	}
 
-	block.WriteTo(dst)
+	block.Write(dst)
 }
 
 func (ca *CA) getRule(idx int) Rule {
-	offset := idx * RuleBytes
+	offset := state.StateBytes + idx*RuleBytes
 
 	return Rule{
 		arena: ca.arena[offset : offset+RuleBytes],
 	}
-}
-
-func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
-	polynomials := CompileRegistry(ca)
-	masterArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
-	var offsets [core.BlockSize - 1]uint32
-
-	stateArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
-	prodSrcArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
-	prodDstArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
-	sumArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
-	sumScratchArena := make([]math.Monomial, 0, EstimatedDensePolynomialSize)
-
-	for i := range core.BlockSize {
-		stateArena = stateArena[:0]
-		stateArena = append(stateArena, polynomials.GetPolynomial(RulesCount-1, i)...)
-
-		for j := RulesCount - 2; j >= 0; j-- {
-			for _, monom := range stateArena {
-				degree := monom.Degree()
-
-				if degree == 0 {
-					continue
-				}
-
-				firstSubscript := monom.FirstSubscript()
-				firstPoly := polynomials.GetPolynomial(j, firstSubscript)
-
-				if degree == 1 {
-					sumScratchArena = sumScratchArena[:0]
-					sumScratchArena = math.AddPolynomials(sumScratchArena, sumArena, firstPoly)
-
-					sumArena, sumScratchArena = sumScratchArena, sumArena
-					continue
-				}
-
-				prodSrcArena = prodSrcArena[:0]
-				prodSrcArena = append(prodSrcArena, firstPoly...)
-
-				currentSub := firstSubscript
-
-				for {
-					currentSub = monom.NextSubscript(currentSub + 1)
-
-					if currentSub == core.BlockSize {
-						break
-					}
-
-					nextPoly := polynomials.GetPolynomial(j, currentSub)
-
-					prodDstArena = math.MultiplyPolynomials(prodDstArena, prodSrcArena, nextPoly)
-
-					prodSrcArena, prodDstArena = prodDstArena, prodSrcArena
-				}
-
-				sumScratchArena = sumScratchArena[:0]
-				sumScratchArena = math.AddPolynomials(sumScratchArena, sumArena, prodSrcArena)
-
-				sumArena, sumScratchArena = sumScratchArena, sumArena
-			}
-
-			stateArena = stateArena[:0]
-			stateArena = append(stateArena, sumArena...)
-
-			sumArena = sumArena[:0]
-		}
-
-		masterArena = append(masterArena, stateArena...)
-
-		if i < len(offsets) {
-			offsets[i] = uint32(len(masterArena))
-		}
-	}
-
-	return &general.CA{
-		Arena:   masterArena,
-		Offsets: offsets,
-	}, nil
 }

@@ -3,14 +3,23 @@ package invertible
 import (
 	"slices"
 
-	"github.com/staleread/aquila/internal/automata/core"
 	"github.com/staleread/aquila/internal/automata/math"
+	"github.com/staleread/aquila/internal/automata/state"
+)
+
+const (
+	FoldsCount             = state.StateSize / math.VectorSize
+	SymbolicPolynomialSize = math.VectorSize + math.ConfusionDegree - 1
+	MaxFoldMonomials       = (math.VectorSize + math.ConfusionDegree - 1) * math.VectorSize
+	MaxLinearFoldMonomials = math.VectorSize * math.VectorSize
+	MaxRuleMonomials       = MaxLinearFoldMonomials + MaxFoldMonomials*(FoldsCount-1)
+	MaxCAMonomials         = MaxRuleMonomials * RulesCount
 )
 
 type SymbolicRegistry struct {
 	arena    []math.Monomial
-	offsets  [RulesCount][core.BlockSize + 1]uint32
-	invPerms [RulesCount][core.BlockSize]uint8
+	offsets  [RulesCount][state.StateSize + 1]uint32
+	invPerms [RulesCount][state.StateSize]uint8
 }
 
 func (e *SymbolicRegistry) GetPolynomial(ruleIdx, bitIdx int) []math.Monomial {
@@ -23,6 +32,7 @@ func (e *SymbolicRegistry) GetPolynomial(ruleIdx, bitIdx int) []math.Monomial {
 func CompileRegistry(ca *CA) *SymbolicRegistry {
 	e := &SymbolicRegistry{}
 	e.arena = make([]math.Monomial, 0, MaxCAMonomials)
+	monomials := make([]math.Monomial, 0, SymbolicPolynomialSize)
 
 	for r := range RulesCount {
 		rule := ca.getRule(r)
@@ -30,7 +40,7 @@ func CompileRegistry(ca *CA) *SymbolicRegistry {
 
 		var sleCoefs [math.VectorSize]math.Vector
 
-		for k := range core.BlockSize {
+		for k := range state.StateSize {
 			f := k / math.VectorSize
 			i := k % math.VectorSize
 			b := perm.Data[k]
@@ -43,39 +53,32 @@ func CompileRegistry(ca *CA) *SymbolicRegistry {
 			fold.sle.Coefs(sleCoefs[:])
 			row := sleCoefs[i]
 
-			monomials := make([]math.Monomial, 0, SymbolicPolynomialSize)
+			monomials = monomials[:0]
 
 			// SLE part
 			foldOffset := f * math.VectorSize
 			for j := range math.VectorSize {
 				if (row>>j)&1 == 1 {
-					m := math.Monomial{}
-					sub := perm.Data[foldOffset+j]
-					m[sub/32] |= (1 << (sub % 32))
+					var m math.Monomial
+					m.SetAt(perm.Data[foldOffset+j], 1)
 					monomials = append(monomials, m)
 				}
 			}
 
 			// Confusion part
 			if f > 0 && len(fold.confusion.Data) > 0 {
-				const SubsPerBit = 5
-				subIdx := i * SubsPerBit
+				const SubsPerBit = math.ConfusionMapBytes / math.VectorSize
+				cursor := i * SubsPerBit
 
-				// Monomial degree 3
-				m3 := math.Monomial{}
-				for k := range 3 {
-					sub := fold.confusion.Data[subIdx+k]
-					m3[sub/32] |= (1 << (sub % 32))
+				for j := range math.ConfusionDegree - 1 {
+					degree := math.ConfusionDegree - j
+					var m math.Monomial
+					for range degree {
+						m.SetAt(fold.confusion.Data[cursor], 1)
+						cursor++
+					}
+					monomials = append(monomials, m)
 				}
-				monomials = append(monomials, m3)
-
-				// Monomial degree 2
-				m2 := math.Monomial{}
-				for k := 3; k < 5; k++ {
-					sub := fold.confusion.Data[subIdx+k]
-					m2[sub/32] |= (1 << (sub % 32))
-				}
-				monomials = append(monomials, m2)
 			}
 
 			slices.SortFunc(monomials, func(a, b math.Monomial) int {
@@ -84,8 +87,7 @@ func CompileRegistry(ca *CA) *SymbolicRegistry {
 
 			e.arena = append(e.arena, monomials...)
 		}
-		e.offsets[r][core.BlockSize] = uint32(len(e.arena))
+		e.offsets[r][state.StateSize] = uint32(len(e.arena))
 	}
-
 	return e
 }

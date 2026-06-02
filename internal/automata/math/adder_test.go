@@ -20,33 +20,33 @@ func TestAddPolynomials(t *testing.T) {
 		},
 		{
 			name:     "One empty",
-			p1:       []math.Monomial{{4, 0, 0}, {1, 0, 0}},
+			p1:       []math.Monomial{math.NewMonomial(2), math.NewMonomial(0)},
 			p2:       []math.Monomial{},
-			expected: []math.Monomial{{4, 0, 0}, {1, 0, 0}},
+			expected: []math.Monomial{math.NewMonomial(2), math.NewMonomial(0)},
 		},
 		{
 			name:     "Disjoint sets",
-			p1:       []math.Monomial{{8, 0, 0}, {2, 0, 0}},
-			p2:       []math.Monomial{{4, 0, 0}, {1, 0, 0}},
-			expected: []math.Monomial{{8, 0, 0}, {4, 0, 0}, {2, 0, 0}, {1, 0, 0}},
+			p1:       []math.Monomial{math.NewMonomial(3), math.NewMonomial(1)},
+			p2:       []math.Monomial{math.NewMonomial(2), math.NewMonomial(0)},
+			expected: []math.Monomial{math.NewMonomial(3), math.NewMonomial(2), math.NewMonomial(1), math.NewMonomial(0)},
 		},
 		{
 			name:     "Identical (full cancellation)",
-			p1:       []math.Monomial{{4, 0, 0}, {1, 0, 0}},
-			p2:       []math.Monomial{{4, 0, 0}, {1, 0, 0}},
+			p1:       []math.Monomial{math.NewMonomial(2), math.NewMonomial(0)},
+			p2:       []math.Monomial{math.NewMonomial(2), math.NewMonomial(0)},
 			expected: []math.Monomial{},
 		},
 		{
 			name:     "Partial overlap",
-			p1:       []math.Monomial{{8, 0, 0}, {4, 0, 0}},
-			p2:       []math.Monomial{{4, 0, 0}, {1, 0, 0}},
-			expected: []math.Monomial{{8, 0, 0}, {1, 0, 0}}, // 4 cancels
+			p1:       []math.Monomial{math.NewMonomial(3), math.NewMonomial(2)},
+			p2:       []math.Monomial{math.NewMonomial(2), math.NewMonomial(0)},
+			expected: []math.Monomial{math.NewMonomial(3), math.NewMonomial(0)}, // x2 cancels
 		},
 		{
 			name:     "Interleaved",
-			p1:       []math.Monomial{{16, 0, 0}, {4, 0, 0}, {1, 0, 0}},
-			p2:       []math.Monomial{{8, 0, 0}, {4, 0, 0}, {2, 0, 0}},
-			expected: []math.Monomial{{16, 0, 0}, {8, 0, 0}, {2, 0, 0}, {1, 0, 0}},
+			p1:       []math.Monomial{math.NewMonomial(4), math.NewMonomial(2), math.NewMonomial(0)},
+			p2:       []math.Monomial{math.NewMonomial(3), math.NewMonomial(2), math.NewMonomial(1)},
+			expected: []math.Monomial{math.NewMonomial(4), math.NewMonomial(3), math.NewMonomial(1), math.NewMonomial(0)},
 		},
 	}
 

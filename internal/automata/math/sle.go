@@ -5,18 +5,23 @@ import (
 	"unsafe"
 )
 
+const (
+	SLESize  = VectorSize * VectorSize
+	SLEBytes = VectorBytes * VectorSize
+)
+
 type SLE struct {
 	data []Vector
 }
 
 func NewSLE(arena []byte) SLE {
-	data := unsafe.Slice((*Vector)(unsafe.Pointer(&arena[0])), len(arena)/2)
+	data := unsafe.Slice((*Vector)(unsafe.Pointer(&arena[0])), len(arena)/VectorBytes)
 
 	return SLE{data}
 }
 
 func (s *SLE) Generate(rnd io.Reader) error {
-	byteView := unsafe.Slice((*byte)(unsafe.Pointer(&s.data[0])), len(s.data)*2)
+	byteView := unsafe.Slice((*byte)(unsafe.Pointer(&s.data[0])), len(s.data)*VectorBytes)
 	if _, err := io.ReadFull(rnd, byteView); err != nil {
 		return err
 	}

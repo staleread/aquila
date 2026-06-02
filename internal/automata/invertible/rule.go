@@ -3,8 +3,16 @@ package invertible
 import (
 	"io"
 
-	"github.com/staleread/aquila/internal/automata/core"
+	"github.com/staleread/aquila/internal/automata/config"
 	"github.com/staleread/aquila/internal/automata/math"
+	"github.com/staleread/aquila/internal/automata/state"
+)
+
+const (
+	RulesCount      = config.CompositionCount + 1
+	LinearFoldBytes = math.SLEBytes
+	FoldBytes       = math.SLEBytes + math.ConfusionMapBytes
+	RuleFoldsBytes  = LinearFoldBytes + FoldBytes*(FoldsCount-1)
 )
 
 type Rule struct {
@@ -35,7 +43,7 @@ func (r *Rule) Generate(rnd io.Reader) error {
 			continue
 		}
 
-		maxSub := math.Subscript(i * math.VectorSize)
+		maxSub := state.Subscript(i * math.VectorSize)
 		if err := fold.confusion.Generate(rnd, maxSub, perm); err != nil {
 			return err
 		}
@@ -43,34 +51,34 @@ func (r *Rule) Generate(rnd io.Reader) error {
 	return nil
 }
 
-func (r *Rule) Apply(state *core.Block) {
+func (r *Rule) Apply(s *state.State) {
 	perm := r.getPermutation()
-	var srcState core.Block = *state
+	var srcState state.State = *s
 
 	for i := range FoldsCount {
 		fold := r.getFold(i)
 
-		in := perm.Gather(state, i)
+		in := perm.Gather(s, i)
 
 		out := fold.sle.Eval(in)
-		out ^= fold.confusion.Eval(&srcState)
+		out ^= fold.confusion.Eval(srcState)
 
-		perm.Scatter(state, i, out)
+		perm.Scatter(s, i, out)
 	}
 }
 
-func (r *Rule) Revert(state *core.Block) {
+func (r *Rule) Revert(s *state.State) {
 	perm := r.getPermutation()
 
 	for i := range FoldsCount {
 		fold := r.getFold(i)
 
-		in := perm.Gather(state, i)
+		in := perm.Gather(s, i)
 
-		noise := fold.confusion.Eval(state)
+		noise := fold.confusion.Eval(*s)
 		out := fold.sle.Solve(in ^ noise)
 
-		perm.Scatter(state, i, out)
+		perm.Scatter(s, i, out)
 	}
 }
 
