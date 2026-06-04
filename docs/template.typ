@@ -85,7 +85,7 @@
   set figure(
     supplement: [Рис.],
     numbering: _ => {
-      let heading = chapter-counter.get().at(0)
+      let chapter = chapter-counter.get().at(0)
       let figure = counter(figure).get().at(0)
       
       str(numbering("1.1", chapter, figure))
