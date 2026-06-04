@@ -3,13 +3,12 @@ package invertible
 import (
 	"github.com/staleread/aquila/internal/automata/general"
 	"github.com/staleread/aquila/internal/automata/math"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 	polynomials := CompileRegistry(ca)
-	masterArena := make([]math.Monomial, 0, InitialArenaCapacity*state.StateSize)
-	var offsets [state.StateSize - 1]uint32
+	masterArena := make([]math.Monomial, 0, InitialArenaCapacity*StateSize)
+	var offsets [StateSize - 1]uint32
 
 	stateArena := make([]math.Monomial, 0, InitialArenaCapacity)
 	prodSrcArena := make([]math.Monomial, 0, InitialArenaCapacity)
@@ -17,11 +16,11 @@ func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 	sumArena := make([]math.Monomial, 0, InitialArenaCapacity)
 	sumScratchArena := make([]math.Monomial, 0, InitialArenaCapacity)
 
-	for i := range state.StateSize {
+	for i := range StateSize {
 		stateArena = stateArena[:0]
 		stateArena = append(stateArena, polynomials.GetPolynomial(RulesCount-1, i)...)
 
-		var subs [state.StateSize]uint8
+		var subs [StateSize]uint8
 		for j := RulesCount - 2; j >= 0; j-- {
 			for _, monom := range stateArena {
 				subsSlice := monom.Subscripts(subs[:0])
@@ -67,7 +66,7 @@ func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 
 		masterArena = append(masterArena, stateArena...)
 
-		if ca.shift.At(state.Subscript(i)) == 1 {
+		if ca.shift.At(math.Subscript(i)) == 1 {
 			masterArena = append(masterArena, math.IdentityMonomial)
 		}
 

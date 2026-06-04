@@ -6,12 +6,18 @@ import (
 
 	"github.com/staleread/aquila/internal/automata/config"
 	"github.com/staleread/aquila/internal/automata/math"
-	"github.com/staleread/aquila/internal/automata/state"
 )
+
+const (
+	StateSize  = math.BitsetSize
+	StateBytes = math.BitsetBytes
+)
+
+type State = math.Bitset
 
 type CA struct {
 	Arena   []math.Monomial
-	Offsets [state.StateSize - 1]uint32
+	Offsets [StateSize - 1]uint32
 }
 
 func (ca *CA) GetPolynomial(idx int) []math.Monomial {
@@ -20,22 +26,22 @@ func (ca *CA) GetPolynomial(idx int) []math.Monomial {
 		start = ca.Offsets[idx-1]
 	}
 	end := uint32(len(ca.Arena))
-	if idx < state.StateSize-1 {
+	if idx < StateSize-1 {
 		end = ca.Offsets[idx]
 	}
 	return ca.Arena[start:end]
 }
 
 func (ca *CA) GetMonomialCounts() []int {
-	counts := make([]int, state.StateSize)
-	for i := range state.StateSize {
+	counts := make([]int, StateSize)
+	for i := range StateSize {
 		counts[i] = len(ca.GetPolynomial(i))
 	}
 	return counts
 }
 
 func (ca *CA) Apply(dst, src []byte) {
-	var srcState state.State
+	var srcState State
 	srcState.Read(src)
 	dstState := ca.applyOnState(srcState)
 	dstState.Write(dst)
@@ -74,14 +80,14 @@ func LoadCA(src io.Reader) (*CA, error) {
 	return ca, nil
 }
 
-func (ca *CA) applyOnState(srcState state.State) state.State {
-	var dstState state.State
-	for i := range state.StateSize {
+func (ca *CA) applyOnState(srcState State) State {
+	var dstState State
+	for i := range StateSize {
 		var res uint8
 		for _, monom := range ca.GetPolynomial(i) {
 			res ^= monom.Eval(srcState)
 		}
-		dstState.SetAt(state.Subscript(i), res)
+		dstState.SetAt(math.Subscript(i), res)
 	}
 	return dstState
 }

@@ -5,16 +5,15 @@ import (
 	"io"
 
 	"github.com/staleread/aquila/internal/automata/math"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
-func (ca *CA) ExportToANF(w io.Writer, input state.State) error {
+func (ca *CA) ExportToANF(w io.Writer, input State) error {
 	dstState := ca.applyOnState(input)
 
-	var subs [state.StateSize]uint8
-	for idx := range state.StateSize {
+	var subs [StateSize]uint8
+	for idx := range StateSize {
 		poly := ca.GetPolynomial(idx)
-		bit := dstState.At(state.Subscript(idx))
+		bit := dstState.At(math.Subscript(idx))
 
 		var monomialsToPrint []math.Monomial
 		addOneTerm := false

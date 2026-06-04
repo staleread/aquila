@@ -6,18 +6,21 @@ import (
 
 	"github.com/staleread/aquila/internal/automata/config"
 	"github.com/staleread/aquila/internal/automata/math"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 const (
+	StateSize            = math.BitsetSize
+	StateBytes           = math.BitsetBytes
 	InitialArenaCapacity = 7_929
 	RuleBytes            = RuleFoldsBytes + math.PermutationBytes
-	CABytes              = state.StateBytes + RuleBytes*RulesCount
+	CABytes              = StateBytes + RuleBytes*RulesCount
 )
+
+type State = math.Bitset
 
 type CA struct {
 	arena []byte
-	shift state.State
+	shift State
 }
 
 func NewCA() *CA {
@@ -33,7 +36,7 @@ func (ca *CA) Load(src io.Reader) error {
 	if _, err := io.ReadFull(src, ca.arena); err != nil {
 		return err
 	}
-	ca.shift.Read(ca.arena[:state.StateBytes])
+	ca.shift.Read(ca.arena[:StateBytes])
 	return nil
 }
 
@@ -46,10 +49,10 @@ func (ca *CA) Save(dst io.Writer) error {
 }
 
 func (ca *CA) Generate(rnd io.Reader) error {
-	if _, err := io.ReadFull(rnd, ca.arena[:state.StateBytes]); err != nil {
+	if _, err := io.ReadFull(rnd, ca.arena[:StateBytes]); err != nil {
 		return fmt.Errorf("failed to generate affine shift: %w", err)
 	}
-	ca.shift.Read(ca.arena[:state.StateBytes])
+	ca.shift.Read(ca.arena[:StateBytes])
 
 	for i := range RulesCount {
 		rule := ca.getRule(i)
@@ -62,7 +65,7 @@ func (ca *CA) Generate(rnd io.Reader) error {
 }
 
 func (ca *CA) Apply(dst, src []byte) {
-	var block state.State
+	var block State
 	block.Read(src)
 
 	for i := range RulesCount {
@@ -75,7 +78,7 @@ func (ca *CA) Apply(dst, src []byte) {
 }
 
 func (ca *CA) Revert(dst, src []byte) {
-	var block state.State
+	var block State
 	block.Read(src)
 
 	block.XorWith(ca.shift)
@@ -89,7 +92,7 @@ func (ca *CA) Revert(dst, src []byte) {
 }
 
 func (ca *CA) getRule(idx int) Rule {
-	offset := state.StateBytes + idx*RuleBytes
+	offset := StateBytes + idx*RuleBytes
 
 	return Rule{
 		arena: ca.arena[offset : offset+RuleBytes],

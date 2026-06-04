@@ -4,11 +4,10 @@ import (
 	"testing"
 
 	"github.com/staleread/aquila/internal/automata/math"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 func TestNewMonomial(t *testing.T) {
-	subs := []state.Subscript{0, 1, 2}
+	subs := []math.Subscript{0, 1, 2}
 	m := math.NewMonomial(subs...)
 
 	got := m.Subscripts(nil)
@@ -97,7 +96,7 @@ func TestMonomial_Eval(t *testing.T) {
 
 	tests := []struct {
 		name string
-		b    state.State
+		b    math.Bitset
 		want uint8
 	}{
 		{"exact match", b0, 1},
@@ -114,8 +113,8 @@ func TestMonomial_Eval(t *testing.T) {
 	}
 }
 
-func blockWith(subs ...state.Subscript) state.State {
-	var b state.State
+func blockWith(subs ...math.Subscript) math.Bitset {
+	var b math.Bitset
 	for _, i := range subs {
 		b.SetAt(i, 1)
 	}

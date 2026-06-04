@@ -5,7 +5,6 @@ import (
 
 	"github.com/staleread/aquila/internal/automata/config"
 	"github.com/staleread/aquila/internal/automata/math"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 const (
@@ -43,7 +42,7 @@ func (r *Rule) Generate(rnd io.Reader) error {
 			continue
 		}
 
-		maxSub := state.Subscript(i * math.VectorSize)
+		maxSub := math.Subscript(i * math.VectorSize)
 		if err := fold.confusion.Generate(rnd, maxSub, perm); err != nil {
 			return err
 		}
@@ -51,9 +50,9 @@ func (r *Rule) Generate(rnd io.Reader) error {
 	return nil
 }
 
-func (r *Rule) Apply(s *state.State) {
+func (r *Rule) Apply(s *State) {
 	perm := r.getPermutation()
-	var srcState state.State = *s
+	var srcState State = *s
 
 	for i := range FoldsCount {
 		fold := r.getFold(i)
@@ -67,7 +66,7 @@ func (r *Rule) Apply(s *state.State) {
 	}
 }
 
-func (r *Rule) Revert(s *state.State) {
+func (r *Rule) Revert(s *State) {
 	perm := r.getPermutation()
 
 	for i := range FoldsCount {

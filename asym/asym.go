@@ -4,12 +4,12 @@ import (
 	"io"
 
 	"github.com/staleread/aquila/internal/automata/config"
+	"github.com/staleread/aquila/internal/automata/invertible"
 	"github.com/staleread/aquila/internal/automata/math"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 const (
-	BlockSize    = state.StateBytes
+	BlockSize    = invertible.StateBytes
 	FoldSize     = math.VectorSize
 	Degree       = math.ConfusionDegree
 	Compositions = config.CompositionCount

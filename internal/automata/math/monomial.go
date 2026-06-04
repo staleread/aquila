@@ -1,15 +1,11 @@
 package math
 
-import (
-	"github.com/staleread/aquila/internal/automata/state"
-)
-
-type Monomial state.State
+type Monomial Bitset
 
 var IdentityMonomial Monomial
 
-func NewMonomial(subs ...state.Subscript) Monomial {
-	var b state.State
+func NewMonomial(subs ...Subscript) Monomial {
+	var b Bitset
 	for _, sub := range subs {
 		b.SetAt(sub, 1)
 	}
@@ -17,27 +13,27 @@ func NewMonomial(subs ...state.Subscript) Monomial {
 }
 
 func CompareMonomials(a, b Monomial) int {
-	return state.State(a).Compare(state.State(b))
+	return Bitset(a).Compare(Bitset(b))
 }
 
 func (m Monomial) Mul(other Monomial) Monomial {
-	return Monomial(state.State(m).Or(state.State(other)))
+	return Monomial(Bitset(m).Or(Bitset(other)))
 }
 
 func (m Monomial) Subscripts(dst []uint8) []uint8 {
-	return state.State(m).Subscripts(dst)
+	return Bitset(m).Subscripts(dst)
 }
 
-func (m *Monomial) SetAt(sub state.Subscript, bit uint8) {
-	(*state.State)(m).SetAt(sub, bit)
+func (m *Monomial) SetAt(sub Subscript, bit uint8) {
+	(*Bitset)(m).SetAt(sub, bit)
 }
 
-func (m Monomial) At(sub state.Subscript) uint8 {
-	return state.State(m).At(sub)
+func (m Monomial) At(sub Subscript) uint8 {
+	return Bitset(m).At(sub)
 }
 
-func (m Monomial) Eval(b state.State) uint8 {
-	if m == IdentityMonomial || b.Contains(state.State(m)) {
+func (m Monomial) Eval(b Bitset) uint8 {
+	if m == IdentityMonomial || b.Contains(Bitset(m)) {
 		return 1
 	}
 	return 0

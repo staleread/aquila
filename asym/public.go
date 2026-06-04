@@ -6,7 +6,6 @@ import (
 	"io"
 
 	"github.com/staleread/aquila/internal/automata/general"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 type PublicKey struct {
@@ -47,26 +46,26 @@ func (k *PublicKey) Encode(dst io.Writer) error {
 }
 
 func (k *PublicKey) Encrypt(rand io.Reader, msg []byte) (ciphertext []byte, err error) {
-	if len(msg)%state.StateBytes != 0 {
+	if len(msg)%general.StateBytes != 0 {
 		return nil, errors.New("invalid plaintext length")
 	}
 
 	ciphertext = make([]byte, len(msg))
-	for i := 0; i < len(msg); i += state.StateBytes {
-		k.ca.Apply(ciphertext[i:i+state.StateBytes], msg[i:i+state.StateBytes])
+	for i := 0; i < len(msg); i += general.StateBytes {
+		k.ca.Apply(ciphertext[i:i+general.StateBytes], msg[i:i+general.StateBytes])
 	}
 
 	return ciphertext, nil
 }
 
 func (k *PublicKey) Verify(digest []byte, signature []byte) bool {
-	if len(signature) != len(digest) || len(signature)%state.StateBytes != 0 {
+	if len(signature) != len(digest) || len(signature)%general.StateBytes != 0 {
 		return false
 	}
 
 	temp := make([]byte, len(signature))
-	for i := 0; i < len(signature); i += state.StateBytes {
-		k.ca.Apply(temp[i:i+state.StateBytes], signature[i:i+state.StateBytes])
+	for i := 0; i < len(signature); i += general.StateBytes {
+		k.ca.Apply(temp[i:i+general.StateBytes], signature[i:i+general.StateBytes])
 	}
 
 	return bytes.Equal(temp, digest)
@@ -76,7 +75,7 @@ func (k *PublicKey) ExportToANF(w io.Writer, input []byte) error {
 	if len(input) != BlockSize {
 		return errors.New("invalid input block length")
 	}
-	var s state.State
+	var s general.State
 	s.Read(input)
 	return k.ca.ExportToANF(w, s)
 }

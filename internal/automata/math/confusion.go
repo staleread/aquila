@@ -3,25 +3,23 @@ package math
 import (
 	"io"
 	"slices"
-
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 const ConfusionMapBytes = (ConfusionDegree*(ConfusionDegree+1)/2 - 1) * VectorSize
 
 type ConfusionMap struct {
-	Data []state.Subscript
+	Data []Subscript
 }
 
 func NewConfusionMap(arena []byte) ConfusionMap {
-	return ConfusionMap{Data: []state.Subscript(arena)}
+	return ConfusionMap{Data: []Subscript(arena)}
 }
 
 func EmptyConfusionMap() ConfusionMap {
 	return ConfusionMap{Data: nil}
 }
 
-func (m *ConfusionMap) Generate(rnd io.Reader, maxSub state.Subscript, perm *Permutation) error {
+func (m *ConfusionMap) Generate(rnd io.Reader, maxSub Subscript, perm *Permutation) error {
 	if _, err := io.ReadFull(rnd, m.Data); err != nil {
 		return err
 	}
@@ -53,7 +51,7 @@ func (m *ConfusionMap) Generate(rnd io.Reader, maxSub state.Subscript, perm *Per
 	return nil
 }
 
-func (m *ConfusionMap) Eval(s state.State) Vector {
+func (m *ConfusionMap) Eval(s Bitset) Vector {
 	if m == nil || len(m.Data) == 0 {
 		return Vector(0)
 	}

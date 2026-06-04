@@ -1,16 +1,12 @@
 package math
 
-import (
-	"io"
+import "io"
 
-	"github.com/staleread/aquila/internal/automata/state"
-)
-
-const PermutationSize = state.StateSize
+const PermutationSize = BitsetSize
 const PermutationBytes = PermutationSize
 
 type Permutation struct {
-	Data []state.Subscript
+	Data []Subscript
 }
 
 func NewPermutation(arena []byte) *Permutation {
@@ -20,7 +16,7 @@ func NewPermutation(arena []byte) *Permutation {
 }
 
 func (p *Permutation) Generate(rnd io.Reader, tmp []byte) error {
-	const n state.Subscript = PermutationSize
+	const n Subscript = PermutationSize
 
 	for i := range n {
 		p.Data[i] = i
@@ -30,7 +26,6 @@ func (p *Permutation) Generate(rnd io.Reader, tmp []byte) error {
 		return err
 	}
 
-	// Fisher–Yates shuffle
 	for i := range n - 1 {
 		j := tmp[i]%(n-i) + i
 		p.Data[i], p.Data[j] = p.Data[j], p.Data[i]
@@ -38,7 +33,7 @@ func (p *Permutation) Generate(rnd io.Reader, tmp []byte) error {
 	return nil
 }
 
-func (p *Permutation) Gather(b *state.State, foldIdx int) Vector {
+func (p *Permutation) Gather(b *Bitset, foldIdx int) Vector {
 	var res Vector
 	offset := foldIdx * VectorSize
 
@@ -49,7 +44,7 @@ func (p *Permutation) Gather(b *state.State, foldIdx int) Vector {
 	return res
 }
 
-func (p *Permutation) Scatter(b *state.State, foldIdx int, v Vector) {
+func (p *Permutation) Scatter(b *Bitset, foldIdx int, v Vector) {
 	offset := foldIdx * VectorSize
 
 	for i := range VectorSize {

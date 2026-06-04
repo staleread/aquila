@@ -1,8 +1,6 @@
 package math
 
-import (
-	"slices"
-)
+import "slices"
 
 // Multiplies two polynomials and overwrites the 'dst' buffer with the resulting
 // polynomial. The resulting monomials are sorted and deduplicated.

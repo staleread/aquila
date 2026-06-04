@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/staleread/aquila/internal/automata/invertible"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 func TestCAInvertibility(t *testing.T) {
@@ -17,14 +16,14 @@ func TestCAInvertibility(t *testing.T) {
 		t.Fatalf("Failed to generate CA: %v", err)
 	}
 
-	src := make([]byte, state.StateBytes)
-	intermediate := make([]byte, state.StateBytes)
-	reverted := make([]byte, state.StateBytes)
+	src := make([]byte, invertible.StateBytes)
+	intermediate := make([]byte, invertible.StateBytes)
+	reverted := make([]byte, invertible.StateBytes)
 
 	for range 10 {
 		rng.Read(src)
 
-		original := make([]byte, state.StateBytes)
+		original := make([]byte, invertible.StateBytes)
 		copy(original, src)
 
 		ca.Apply(intermediate, src)

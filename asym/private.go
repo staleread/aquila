@@ -6,7 +6,6 @@ import (
 	"io"
 
 	"github.com/staleread/aquila/internal/automata/invertible"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 var _ crypto.Decrypter = (*PrivateKey)(nil)
@@ -61,26 +60,26 @@ func (k *PrivateKey) Encode(dst io.Writer) error {
 }
 
 func (k *PrivateKey) Decrypt(rand io.Reader, msg []byte, opts crypto.DecrypterOpts) (plaintext []byte, err error) {
-	if len(msg)%state.StateBytes != 0 {
+	if len(msg)%invertible.StateBytes != 0 {
 		return nil, errors.New("invalid ciphertext length")
 	}
 
 	plaintext = make([]byte, len(msg))
-	for i := 0; i < len(msg); i += state.StateBytes {
-		k.ca.Revert(plaintext[i:i+state.StateBytes], msg[i:i+state.StateBytes])
+	for i := 0; i < len(msg); i += invertible.StateBytes {
+		k.ca.Revert(plaintext[i:i+invertible.StateBytes], msg[i:i+invertible.StateBytes])
 	}
 
 	return plaintext, nil
 }
 
 func (k *PrivateKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) (signature []byte, err error) {
-	if len(digest)%state.StateBytes != 0 {
+	if len(digest)%invertible.StateBytes != 0 {
 		return nil, errors.New("invalid digest length")
 	}
 
 	signature = make([]byte, len(digest))
-	for i := 0; i < len(digest); i += state.StateBytes {
-		k.ca.Revert(signature[i:i+state.StateBytes], digest[i:i+state.StateBytes])
+	for i := 0; i < len(digest); i += invertible.StateBytes {
+		k.ca.Revert(signature[i:i+invertible.StateBytes], digest[i:i+invertible.StateBytes])
 	}
 
 	return signature, nil

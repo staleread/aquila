@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/staleread/aquila/internal/automata/math"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 const CAConfigBytes = 4
@@ -18,7 +17,7 @@ type CAConfig struct {
 }
 
 var Current = CAConfig{
-	Block:  byte(state.StateSize),
+	Block:  byte(math.BitsetSize),
 	Comp:   byte(CompositionCount),
 	Fold:   byte(math.VectorSize),
 	Degree: byte(math.ConfusionDegree),
