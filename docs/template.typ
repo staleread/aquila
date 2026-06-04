@@ -92,6 +92,17 @@
     },
     caption: [ -- ]
   )
+
+  show figure: it => {
+    linebreak()
+    it
+    linebreak()
+  }
+  
+  show table: it => {
+    it
+    linebreak()
+  } 
   
   body
 }
