@@ -1,6 +1,6 @@
 //go:build block128
 
-package state
+package math
 
 import (
 	"encoding/binary"

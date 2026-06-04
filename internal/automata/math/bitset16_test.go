@@ -65,10 +65,10 @@ func TestBitset_Compare(t *testing.T) {
 		a, b math.Bitset
 		want int
 	}{
-		{"equal", math.NewBitset(5), state.NewBitset(5), 0},
-		{"a < b", math.NewBitset(0), state.NewBitset(1), -1},
-		{"a > b", math.NewBitset(1), state.NewBitset(0), 1},
-		{"both zero", math.Bitset(0), state.Bitset(0), 0},
+		{"equal", math.NewBitset(5), math.NewBitset(5), 0},
+		{"a < b", math.NewBitset(0), math.NewBitset(1), -1},
+		{"a > b", math.NewBitset(1), math.NewBitset(0), 1},
+		{"both zero", math.Bitset(0), math.Bitset(0), 0},
 	}
 
 	for _, tt := range tests {
@@ -87,9 +87,9 @@ func TestBitset_Or(t *testing.T) {
 		a, b     math.Bitset
 		wantBits []math.Subscript
 	}{
-		{"disjoint bits", math.NewBitset(0), state.NewBitset(1), []state.Subscript{0, 1}},
-		{"overlapping bits", math.NewBitset(0, 1), state.NewBitset(1, 2), []state.Subscript{0, 1, 2}},
-		{"with zero", math.NewBitset(2, 12), state.Bitset(0), []state.Subscript{2, 12}},
+		{"disjoint bits", math.NewBitset(0), math.NewBitset(1), []math.Subscript{0, 1}},
+		{"overlapping bits", math.NewBitset(0, 1), math.NewBitset(1, 2), []math.Subscript{0, 1, 2}},
+		{"with zero", math.NewBitset(2, 12), math.Bitset(0), []math.Subscript{2, 12}},
 	}
 
 	for _, tt := range tests {
@@ -110,11 +110,11 @@ func TestBitset_Contains(t *testing.T) {
 		other math.Bitset
 		want  bool
 	}{
-		{"exact match", math.NewBitset(2, 12), state.NewBitset(2, 12), true},
-		{"proper superset", math.NewBitset(2, 4, 12), state.NewBitset(2, 12), true},
-		{"missing one bit", math.NewBitset(2), state.NewBitset(2, 12), false},
-		{"other is zero", math.NewBitset(5), state.Bitset(0), true},
-		{"both zero", math.Bitset(0), state.Bitset(0), true},
+		{"exact match", math.NewBitset(2, 12), math.NewBitset(2, 12), true},
+		{"proper superset", math.NewBitset(2, 4, 12), math.NewBitset(2, 12), true},
+		{"missing one bit", math.NewBitset(2), math.NewBitset(2, 12), false},
+		{"other is zero", math.NewBitset(5), math.Bitset(0), true},
+		{"both zero", math.Bitset(0), math.Bitset(0), true},
 	}
 
 	for _, tt := range tests {

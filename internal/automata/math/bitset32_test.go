@@ -5,7 +5,7 @@ package math_test
 import (
 	"testing"
 
-	"github.com/staleread/aquila/internal/automata/bitset"
+	"github.com/staleread/aquila/internal/automata/math"
 )
 
 func TestBitset_SetAt_At(t *testing.T) {

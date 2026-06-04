@@ -1,4 +1,4 @@
-//go:build block96 || (!block16 && !block32 && !block128)
+//go:build block96 || (!block8 && !block16 && !block32 && !block64 && !block128)
 
 package math_test
 

@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/staleread/aquila/internal/automata/math"
-	"github.com/staleread/aquila/internal/automata/state"
 )
 
 func TestConfusionMapEval(t *testing.T) {
@@ -22,7 +21,7 @@ func TestConfusionMapEval(t *testing.T) {
 	fixture[3], fixture[4] = 3, 4
 	fixtureGen := bytes.NewReader(fixture)
 
-	maxSub := state.Subscript(math.VectorSize)
+	maxSub := math.Subscript(math.VectorSize)
 
 	if err := m.Generate(fixtureGen, maxSub, perm); err != nil {
 		t.Fatalf("Failed to generate degusion map: %v", err)
@@ -38,34 +37,34 @@ func TestConfusionMapEval(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		activeBits  []state.Subscript
+		activeBits  []math.Subscript
 		expectedBit uint8
 	}{
 		{
 			name:        "All zeros -> 0^0 = 0",
-			activeBits:  []state.Subscript{},
+			activeBits:  []math.Subscript{},
 			expectedBit: 0,
 		},
 		{
 			name:        "Only bit 5 is set -> 0^0 = 0",
-			activeBits:  []state.Subscript{5},
+			activeBits:  []math.Subscript{5},
 			expectedBit: 0,
 		},
 		{
 			name:        "Bits 3 and 4 are set -> 0^1 = 1",
-			activeBits:  []state.Subscript{3, 4},
+			activeBits:  []math.Subscript{3, 4},
 			expectedBit: 1,
 		},
 		{
 			name:        "Bits 0, 1, 2, 3, 4 are set -> 1^1 = 0",
-			activeBits:  []state.Subscript{0, 1, 2, 3, 4},
+			activeBits:  []math.Subscript{0, 1, 2, 3, 4},
 			expectedBit: 0,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			b := state.State{}
+			var b math.Bitset
 
 			for _, bit := range tc.activeBits {
 				b.SetAt(bit, 1)
@@ -85,7 +84,7 @@ func getIdentityPermutation() *math.Permutation {
 	permArena := make([]byte, math.PermutationBytes)
 
 	for i := range len(permArena) {
-		permArena[i] = state.Subscript(i)
+		permArena[i] = math.Subscript(i)
 	}
 	return math.NewPermutation(permArena)
 }
