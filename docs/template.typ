@@ -37,6 +37,7 @@
     if it.body.has("text") and it.body.text.starts-with("РОЗДІЛ") {
       chapter-counter.step()
       counter(math.equation).update(0)
+      counter(figure).update(0)
     }
     align(center)[
       #set text(size: fontSize)

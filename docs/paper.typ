@@ -59,6 +59,10 @@
 
 #pagebreak()
 
+#include "sections/summary.typ"
+
+#pagebreak()
+
 = Список використаних джерел
 
 #bibliography(
