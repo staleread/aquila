@@ -29,26 +29,21 @@
     lang: "ua"
   )
   
-  set figure(
-    supplement: [Рисунок],
-    numbering: _ => {
-      let headingCnt = str(counter(heading).get().at(0));
-      let figureCnt = str(counter(figure).get().at(0));
-      headingCnt + "." + figureCnt
-    }
-  )
-  
-  set figure.caption(separator: [ -- ])
-  
+  let chapter-counter = counter("chapter")
+
   set heading(numbering: none)
-  
+
   show heading.where(level: 1): it => {
+    if it.body.has("text") and it.body.text.starts-with("РОЗДІЛ") {
+      chapter-counter.step()
+      counter(math.equation).update(0)
+    }
     align(center)[
       #set text(size: fontSize)
       #block(
         above: 3.5em,
         below: 2.5em,
-        upper(it),
+        upper(it.body)
       )
     ]
   }
@@ -73,6 +68,30 @@
     set text(font: "Courier New", size: 10pt)
     it
   }
+  
+  set math.equation(
+    numbering: eq => {
+      let chapter = chapter-counter.get().at(0)
+      let equation = counter(math.equation).get().at(0)
+      
+      if chapter == 0 {
+        str(numbering("(1)", equation))
+      } else {
+        str(numbering("(1.1)", chapter, equation))
+      }
+    }
+  )
+    
+  set figure(
+    supplement: [Рис.],
+    numbering: _ => {
+      let heading = chapter-counter.get().at(0)
+      let figure = counter(figure).get().at(0)
+      
+      str(numbering("1.1", chapter, figure))
+    },
+    caption: [ -- ]
+  )
   
   body
 }
