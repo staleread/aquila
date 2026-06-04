@@ -7,14 +7,6 @@ import (
 	"github.com/staleread/aquila/internal/automata/state"
 )
 
-// #if confusion2
-// const ConfusionDegree = 2
-// #endif
-//
-// #if confusion3
-// const ConfusionDegree = 3
-// #endif
-
 const ConfusionMapBytes = (ConfusionDegree*(ConfusionDegree+1)/2 - 1) * VectorSize
 
 type ConfusionMap struct {
