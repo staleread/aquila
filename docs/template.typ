@@ -66,7 +66,7 @@
   
   show raw.where(block: true): it => {
     set par(first-line-indent: 0pt)
-    set text(font: "Courier New", size: 10pt)
+    set text(font: "Courier New", size: 8pt)
     it
   }
   
