@@ -24,6 +24,3 @@
   title: none,
   style: "dstu-gost-7-1-2006.csl",
 )
-
-//#pagebreak()
-//#include "sections/code.typ"
