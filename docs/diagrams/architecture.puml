@@ -1,0 +1,43 @@
+@startuml
+skinparam componentStyle rectangle
+left to right direction
+allow_mixing
+
+package "Прикладні CLI Додатки" {
+    component [asym-cli] as CLI
+    component [avalanche-cli] as Hamming
+}
+
+package "Публічний API (lib/)" {
+    component [lib/asym] as AsymAPI
+    component [lib/sym] as SymAPI
+}
+
+package "Внутрішнє крипто-ядро (internal/automata/)" {
+    component [invertible] as InvertibleCA
+    component [general] as GeneralCA
+    component [core] as CoreCA
+    component [math] as MathEngine
+}
+
+' Напрямки залежностей (хто кого імпортує)
+CLI ..> AsymAPI : використовує
+Hamming ..> AsymAPI : використовує
+
+AsymAPI ..> InvertibleCA : адаптує
+AsymAPI ..> GeneralCA : адаптує
+AsymAPI ..> CoreCA : базується на
+
+SymAPI ..> InvertibleCA : адаптує
+SymAPI ..> CoreCA : базується на
+
+InvertibleCA ..> GeneralCA : виводить
+InvertibleCA ..> MathEngine : обчислює через
+InvertibleCA ..> CoreCA : базується на
+
+GeneralCA ..> MathEngine : обчислює через
+GeneralCA ..> CoreCA : базується на
+
+MathEngine ..> CoreCA : базується на
+
+@enduml
