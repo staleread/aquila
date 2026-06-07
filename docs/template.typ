@@ -1,4 +1,4 @@
-#let paper(body) = {
+#let template(body) = {
   set page(
     paper: "a4",
     numbering: "1",
@@ -103,7 +103,9 @@
   show table: it => {
     it
     linebreak()
-  } 
+  }
+
+  set list(marker: [--])
   
   body
 }

@@ -1,14 +1,11 @@
-#import "template.typ": paper
-#show: paper
+#import "template.typ": template
 
+#show: template
+
+#include "sections/cover.typ"
 #include "sections/intro.typ"
-
-#pagebreak()
-
 #include "sections/section1.typ"
-
 #include "sections/section2.typ"
-
 #include "sections/section3.typ"
 
 #pagebreak()
