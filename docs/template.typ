@@ -2,7 +2,7 @@
   set page(
     paper: "a4",
     numbering: "1",
-    number-align: right,
+    number-align: top + right,
     margin: (
       top: 20mm,
       bottom: 20mm,
