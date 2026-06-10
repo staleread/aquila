@@ -12,21 +12,19 @@
 
 = ЗМІСТ
 #v(-1.5em)
-#outline()
 
+#outline()
 #pagebreak()
 
 #include "sections/intro.typ"
+#pagebreak()
 #include "sections/section1.typ"
 #pagebreak()
 #include "sections/section2.typ"
 #pagebreak()
 #include "sections/section3.typ"
-
 #pagebreak()
-
 #include "sections/summary.typ"
-
 #pagebreak()
 
 = СПИСОК ВИКОРИСТАНИХ ДЖЕРЕЛ

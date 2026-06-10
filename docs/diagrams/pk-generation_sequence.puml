@@ -1,0 +1,76 @@
+@startuml
+skinparam BoxPadding 10
+skinparam ParticipantPadding 10
+
+box "Консольний інтерфейс" #FFFFFF
+participant cli
+end box
+
+box "API взаємодії" #FFFFFF
+participant PrivateKey
+end box
+
+box "Приватний КА" #FFFFFF
+participant "invertible.CA" as invertibleCA
+participant SymbolicRegistry
+end box
+
+box "Математичне ядро" #FFFFFF
+participant Monomial
+end box
+
+box "Публічний КА" #FFFFFF
+participant "general.CA" as generalCA
+end box
+
+PrivateKey -> invertibleCA : DeriveGeneralCA()
+activate invertibleCA
+
+invertibleCA -> SymbolicRegistry : CompileRegistry(екземпляр invertible.CA)
+activate SymbolicRegistry
+
+loop для кожного з m бітів вихідного блоку
+    SymbolicRegistry -> invertibleCA : getRule(idx) / getFold(idx)
+    invertibleCA --> SymbolicRegistry : лінійні та нелінійні коефіцієнти
+    
+    note over SymbolicRegistry
+        Алгебраїчна композиція:
+        символьна підстановка
+    end note
+    
+    SymbolicRegistry -> Monomial : Mul(моном)
+    activate Monomial
+    
+    note over Monomial
+        побітове логічне "АБО" (OR)
+        над масками змінних
+    end note
+    
+    Monomial --> SymbolicRegistry : новий моном
+    deactivate Monomial
+    
+    note over SymbolicRegistry
+        XOR-додавання ($1+1=0$)
+        та дедуплікація дублікатів
+    end note
+end
+
+note over SymbolicRegistry
+    Фіксація вільних членів
+    вектором афінного зсуву V
+end note
+
+SymbolicRegistry -> generalCA : Інстанціювання відкритого ключа
+activate generalCA
+generalCA --> SymbolicRegistry : екземпляр general.CA
+deactivate generalCA
+
+SymbolicRegistry --> invertibleCA : екземпляр general.CA
+deactivate SymbolicRegistry
+
+invertibleCA --> PrivateKey : екземпляр general.CA
+deactivate invertibleCA
+
+PrivateKey --> cli : екземпляри PrivateKey & PublicKey
+
+@enduml
