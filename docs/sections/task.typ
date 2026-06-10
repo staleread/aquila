@@ -1,13 +1,3 @@
-// Помічник для створення довгих ліній заповнення з підписами знизу
-#let field(width, content, subtext) = block(width: width, align(center)[
-  #underline(content) \
-  #v(-0.8em) #text(size: 8pt)[(#subtext)]
-])
-
-#let lined_text(content) = [
-  #underline(content + repeat([#box(width: 0.25em)]) )
-]
-
 #[
   #set text(size: 12pt)
   #set par(leading: 0.5em, first-line-indent: 0pt)
