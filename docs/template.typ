@@ -21,6 +21,10 @@
     spacing: 1em
   )
   
+  set list(marker: [--])
+
+  set outline(title: "ЗМІСТ", indent: 0em)
+  
   let fontSize = 14pt;
   
   set text(
@@ -104,8 +108,6 @@
     it
     linebreak()
   }
-
-  set list(marker: [--])
   
   body
 }

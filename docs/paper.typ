@@ -2,12 +2,14 @@
 
 #show: template
 
+
 #[
   #set page(numbering: none)
   #include "sections/cover.typ"
+  #include "sections/task.typ"
 ]
 
-#outline(title: "ЗМІСТ", indent: 0em)
+#outline()
 
 #include "sections/intro.typ"
 #include "sections/section1.typ"
