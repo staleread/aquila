@@ -85,8 +85,9 @@
       
       str(numbering("1.1", chapter, figure))
     },
-    caption: [ -- ]
   )
+  set figure.caption(separator: [ -- ])
+  
   show figure: it => block(above: offset, below: offset, it)
   
   show table: it => block(below: offset, it)
