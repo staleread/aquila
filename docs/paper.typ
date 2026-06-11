@@ -2,7 +2,6 @@
 
 #show: template
 
-
 #[
   #set page(numbering: none)
   #include "sections/cover.typ"
@@ -11,11 +10,11 @@
 ]
 
 = ЗМІСТ
-#v(-1.5em)
-
 #outline()
 #pagebreak()
 
+#include "sections/terminology.typ"
+#pagebreak()
 #include "sections/intro.typ"
 #pagebreak()
 #include "sections/section1.typ"
