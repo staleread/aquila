@@ -1,8 +1,8 @@
-#let paper(body) = {
+#let template(body) = {
   set page(
     paper: "a4",
     numbering: "1",
-    number-align: right,
+    number-align: top + right,
     margin: (
       top: 20mm,
       bottom: 20mm,
@@ -21,7 +21,12 @@
     spacing: 1em
   )
   
+  set list(marker: [--])
+
+  set outline(title: none, indent: 0em)
+  
   let fontSize = 14pt;
+  let offset = fontSize + 1.5em
   
   set text(
     font: "Times New Roman",
@@ -33,6 +38,13 @@
 
   set heading(numbering: none)
 
+  show heading: it => {
+    set par(justify: false)
+    set text(size: fontSize)
+    
+    block(above: offset, below: offset, it)
+  }
+
   show heading.where(level: 1): it => {
     if it.body.has("text") and it.body.text.starts-with("РОЗДІЛ") {
       chapter-counter.step()
@@ -40,28 +52,8 @@
       counter(figure).update(0)
     }
     align(center)[
-      #set text(size: fontSize)
-      #block(
-        above: 3.5em,
-        below: 2.5em,
-        upper(it.body)
-      )
+      #it
     ]
-  }
-  
-  show heading.where(level: 2): it => {
-    set text(size: fontSize);
-    block(above: 3.5em, below: 2.5em, it)
-  }
-  
-  show heading.where(level: 3): it => {
-    set text(size: fontSize);
-    block(above: 2em, below: 2em, it)
-  }
-  
-  show outline: it => {
-    show heading: set align(center)
-    it
   }
   
   show raw.where(block: true): it => {
@@ -82,7 +74,9 @@
       }
     }
   )
-    
+  
+  show math.equation.where(block: true): it => block(above: offset, below: offset, it)
+
   set figure(
     supplement: [Рис.],
     numbering: _ => {
@@ -93,17 +87,9 @@
     },
     caption: [ -- ]
   )
-
-  show figure: it => {
-    linebreak()
-    it
-    linebreak()
-  }
+  show figure: it => block(above: offset, below: offset, it)
   
-  show table: it => {
-    it
-    linebreak()
-  } 
+  show table: it => block(below: offset, it)
   
   body
 }

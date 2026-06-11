@@ -1,0 +1,52 @@
+@startuml
+skinparam BoxPadding 10
+skinparam ParticipantPadding 10
+
+box "Консольний інтерфейс" #FFFFFF
+participant cli
+end box
+
+box "API взаємодії" #FFFFFF
+participant PrivateKey
+end box
+
+box "Приватний КА" #FFFFFF
+participant "invertible.CA" as invertibleCA
+participant SymbolicRegistry
+end box
+
+box "Математичне ядро" #FFFFFF
+participant Monomial
+end box
+
+box "Стандартна бібліотека" #FFFFFF
+participant "crypto/rand" as cryptoRand
+end box
+
+cli -> PrivateKey : GeneratePrivateKey()
+activate PrivateKey
+
+PrivateKey -> invertibleCA : NewCA()
+activate invertibleCA
+invertibleCA --> PrivateKey : екземпляр invertible.CA
+deactivate invertibleCA
+
+PrivateKey -> invertibleCA : Generate(rand.Reader)
+activate invertibleCA
+
+invertibleCA -> cryptoRand : Read(entropy)
+activate cryptoRand
+cryptoRand --> invertibleCA : ентропія
+deactivate cryptoRand
+
+note over invertibleCA
+    Формування оборотних
+    LU-матриць для SLE
+    та перестановок
+end note
+
+invertibleCA --> PrivateKey : SK успішно сформовано
+deactivate invertibleCA
+
+deactivate PrivateKey
+@enduml

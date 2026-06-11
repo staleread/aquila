@@ -1,20 +1,29 @@
-#import "template.typ": paper
-#show: paper
+#import "template.typ": template
 
+#show: template
+
+#[
+  #set page(numbering: none)
+  #include "sections/cover.typ"
+  #include "sections/task.typ"
+  #include "sections/abstract.typ"
+]
+
+= ЗМІСТ
+#outline()
+#pagebreak()
+
+#include "sections/terminology.typ"
+#pagebreak()
 #include "sections/intro.typ"
-
 #pagebreak()
-
 #include "sections/section1.typ"
-
-#include "sections/section2.typ"
-
-#include "sections/section3.typ"
-
 #pagebreak()
-
+#include "sections/section2.typ"
+#pagebreak()
+#include "sections/section3.typ"
+#pagebreak()
 #include "sections/summary.typ"
-
 #pagebreak()
 
 = СПИСОК ВИКОРИСТАНИХ ДЖЕРЕЛ
