@@ -1,9 +1,13 @@
 package invertible
 
 import (
+	stdmath "math"
+
 	"github.com/staleread/aquila/internal/automata/general"
 	"github.com/staleread/aquila/internal/automata/math"
 )
+
+var InitialArenaCapacity = calculateMaxMonomiasPerBit() / 2
 
 func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 	polynomials := CompileRegistry(ca)
@@ -79,4 +83,23 @@ func (ca *CA) DeriveGeneralCA() (*general.CA, error) {
 		Arena:   masterArena,
 		Offsets: offsets,
 	}, nil
+}
+
+func calculateMaxMonomiasPerBit() int {
+	L := math.VectorSize / 2
+	d0 := math.ConfusionDegree
+	r := RulesCount - 1
+
+	M := L + d0 - 1
+	for i := 1; i <= r; i++ {
+		if M <= 1 {
+			M = M*M + L*M
+			continue
+		}
+		mFloat := float64(M)
+		p1 := stdmath.Pow(mFloat, float64(d0+1))
+		p2 := stdmath.Pow(mFloat, 2.0)
+		M = int((p1-p2)/float64(M-1)) + L*M
+	}
+	return M
 }

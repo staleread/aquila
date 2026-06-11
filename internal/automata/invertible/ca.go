@@ -9,11 +9,10 @@ import (
 )
 
 const (
-	StateSize            = math.BitsetSize
-	StateBytes           = math.BitsetBytes
-	InitialArenaCapacity = 7_929
-	RuleBytes            = RuleFoldsBytes + math.PermutationBytes
-	CABytes              = StateBytes + RuleBytes*RulesCount
+	StateSize  = math.BitsetSize
+	StateBytes = math.BitsetBytes
+	RuleBytes  = RuleFoldsBytes + math.PermutationBytes
+	CABytes    = StateBytes + RuleBytes*RulesCount
 )
 
 type State = math.Bitset
