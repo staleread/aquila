@@ -329,7 +329,7 @@ $ M_r = ((M_(r-1))^(d_0 + 1) - (M_(r-1))^2) / (M_(r-1) - 1) + L dot M_(r-1) $
 
 #columns(2)[
   #figure(
-    image("images/avalanche_96_fold_impact_d2.png", width: 90%),
+    image("plots/avalanche_96_fold_impact_d2.png", width: 90%),
     caption: [Розподіл показників SAC для 96-бітного блоку при масштабуванні згортки]
   )
   #colbreak()
@@ -355,7 +355,7 @@ $ M_r = ((M_(r-1))^(d_0 + 1) - (M_(r-1))^2) / (M_(r-1) - 1) + L dot M_(r-1) $
   gutter: 20pt,
   align: horizon,
   figure(
-    image("images/correlation_32_grid.png", width: 80%),
+    image("plots/correlation_32_grid.png", width: 80%),
     caption: [Розподіл для 32-бітних конфігурацій]
   ),
   [
@@ -378,7 +378,7 @@ $ M_r = ((M_(r-1))^(d_0 + 1) - (M_(r-1))^2) / (M_(r-1) - 1) + L dot M_(r-1) $
   gutter: 20pt,
   align: horizon,
   figure(
-    image("images/correlation_96_grid_horiz.png", width: 100%),
+    image("plots/correlation_96_grid_horiz.png", width: 100%),
     caption: [Розподіл для 96-бітних конфігурацій]
   ),
   [
@@ -399,7 +399,7 @@ $ M_r = ((M_(r-1))^(d_0 + 1) - (M_(r-1))^2) / (M_(r-1) - 1) + L dot M_(r-1) $
   gutter: 20pt,
   align: horizon,
   figure(
-    image("images/sat_solving_time_16.png", width: 100%),
+    image("plots/sat_solving_time_16.png", width: 100%),
     caption: [Розподіл часу роботи розв'язувача для 16-бітної моделі]
   ),
   [
@@ -421,7 +421,7 @@ $ M_r = ((M_(r-1))^(d_0 + 1) - (M_(r-1))^2) / (M_(r-1) - 1) + L dot M_(r-1) $
   gutter: 20pt,
   align: horizon,
   figure(
-    image("images/sat_success_rate_16.png", width: 100%),
+    image("plots/sat_success_rate_16.png", width: 100%),
     caption: [Динаміка частки успішних розв'язань (Success Rate)]
   ),
   [
@@ -444,7 +444,7 @@ $ M_r = ((M_(r-1))^(d_0 + 1) - (M_(r-1))^2) / (M_(r-1) - 1) + L dot M_(r-1) $
   gutter: 20pt,
   align: horizon,
   figure(
-    image("images/sat_solving_time_32.png", width: 100%),
+    image("plots/sat_solving_time_32.png", width: 100%),
     caption: [Часова аномалія SAT-розв'язання]
   ),
   [
@@ -464,7 +464,7 @@ $ M_r = ((M_(r-1))^(d_0 + 1) - (M_(r-1))^2) / (M_(r-1) - 1) + L dot M_(r-1) $
   gutter: 20pt,
   align: horizon,
   figure(
-    image("images/sat_success_rate_32.png", width: 100%),
+    image("plots/sat_success_rate_32.png", width: 100%),
     caption: [Частка успішних розв'язань та упередження виживання]
   ),
   [

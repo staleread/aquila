@@ -1,4 +1,4 @@
-#import "common.typ": common
+#import "../common.typ": common
 
 #show: common
 
@@ -88,9 +88,9 @@
 
 #[
   #set page(numbering: none)
-  #include "sections/cover.typ"
-  #include "sections/task.typ"
-  #include "sections/abstract.typ"
+  #include "cover.typ"
+  #include "task.typ"
+  #include "abstract.typ"
 ]
 
 = ЗМІСТ
@@ -98,28 +98,28 @@
 #outline()
 #pagebreak()
 
-#include "sections/terminology.typ"
+#include "terminology.typ"
 #pagebreak()
-#include "sections/intro.typ"
+#include "intro.typ"
 #pagebreak()
-#include "sections/section1.typ"
+#include "section1.typ"
 #pagebreak()
-#include "sections/section2.typ"
+#include "section2.typ"
 #pagebreak()
-#include "sections/section3.typ"
+#include "section3.typ"
 #pagebreak()
-#include "sections/summary.typ"
+#include "summary.typ"
 #pagebreak()
 
 = СПИСОК ВИКОРИСТАНИХ ДЖЕРЕЛ
 
 #bibliography(
-  "references.bib",
+  "../references.bib",
   title: none,
-  style: "dstu-gost-7-1-2006.csl",
+  style: "../dstu-gost-7-1-2006.csl",
 )
 
 #pagebreak()
-#include "sections/lib-src.typ"
+#include "lib-src.typ"
 #pagebreak()
-#include "sections/cli-src.typ"
+#include "cli-src.typ"
