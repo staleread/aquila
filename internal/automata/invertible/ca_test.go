@@ -2,11 +2,45 @@ package invertible_test
 
 import (
 	"bytes"
+	"io"
 	"math/rand"
 	"testing"
 
 	"github.com/staleread/aquila/internal/automata/invertible"
 )
+
+type zeroReader struct{}
+
+func (zeroReader) Read(dst []byte) (int, error) {
+	clear(dst)
+	return len(dst), nil
+}
+
+func TestCAGenerateRejectsZeroAffineShift(t *testing.T) {
+	prefix := make([]byte, 2*invertible.StateBytes)
+	prefix[invertible.StateBytes] = 1
+	rng := rand.New(rand.NewSource(42))
+	reader := io.MultiReader(bytes.NewReader(prefix), rng)
+
+	ca := invertible.NewCA()
+	if err := ca.Generate(reader); err != nil {
+		t.Fatalf("Generate failed after a nonzero shift was supplied: %v", err)
+	}
+
+	zero := make([]byte, invertible.StateBytes)
+	got := make([]byte, invertible.StateBytes)
+	ca.Apply(got, zero)
+	if bytes.Equal(got, zero) {
+		t.Fatal("generated CA maps zero to zero")
+	}
+}
+
+func TestCAGenerateRejectsRepeatedZeroAffineShifts(t *testing.T) {
+	ca := invertible.NewCA()
+	if err := ca.Generate(zeroReader{}); err == nil {
+		t.Fatal("Generate accepted repeated zero affine shifts")
+	}
+}
 
 func TestCAInvertibility(t *testing.T) {
 	ca := invertible.NewCA()
