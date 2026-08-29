@@ -18,7 +18,8 @@ func (zeroReader) Read(dst []byte) (int, error) {
 
 func TestCAGenerateRejectsZeroAffineShift(t *testing.T) {
 	prefix := make([]byte, 2*invertible.StateBytes)
-	prefix[invertible.StateBytes] = 1
+	wantShift := prefix[invertible.StateBytes:]
+	wantShift[0] = 1
 	rng := rand.New(rand.NewSource(42))
 	reader := io.MultiReader(bytes.NewReader(prefix), rng)
 
@@ -30,8 +31,14 @@ func TestCAGenerateRejectsZeroAffineShift(t *testing.T) {
 	zero := make([]byte, invertible.StateBytes)
 	got := make([]byte, invertible.StateBytes)
 	ca.Apply(got, zero)
-	if bytes.Equal(got, zero) {
-		t.Fatal("generated CA maps zero to zero")
+	if !bytes.Equal(got, wantShift) {
+		t.Errorf("Apply(zero) = %x, want generated affine shift %x", got, wantShift)
+	}
+
+	reverted := make([]byte, invertible.StateBytes)
+	ca.Revert(reverted, got)
+	if !bytes.Equal(reverted, zero) {
+		t.Errorf("Revert(Apply(zero)) = %x, want zero", reverted)
 	}
 }
 
