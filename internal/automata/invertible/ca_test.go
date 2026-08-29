@@ -17,11 +17,13 @@ func (zeroReader) Read(dst []byte) (int, error) {
 }
 
 func TestCAGenerateRejectsZeroAffineShift(t *testing.T) {
-	prefix := make([]byte, 2*invertible.StateBytes)
-	wantShift := prefix[invertible.StateBytes:]
-	wantShift[0] = 1
-	rng := rand.New(rand.NewSource(42))
-	reader := io.MultiReader(bytes.NewReader(prefix), rng)
+	validShift := make([]byte, invertible.StateBytes)
+	validShift[0] = 1
+	reader := io.MultiReader(
+		bytes.NewReader(make([]byte, invertible.StateBytes)), // used for V generation and should get rejected as a zero-vector
+		bytes.NewReader(validShift),                          // non zero vector and should be accepted as V
+		rand.New(rand.NewSource(42)),                         // used for other CA components generation
+	)
 
 	ca := invertible.NewCA()
 	if err := ca.Generate(reader); err != nil {
@@ -29,14 +31,14 @@ func TestCAGenerateRejectsZeroAffineShift(t *testing.T) {
 	}
 
 	zero := make([]byte, invertible.StateBytes)
-	got := make([]byte, invertible.StateBytes)
-	ca.Apply(got, zero)
-	if !bytes.Equal(got, wantShift) {
-		t.Errorf("Apply(zero) = %x, want generated affine shift %x", got, wantShift)
+	applied := make([]byte, invertible.StateBytes)
+	ca.Apply(applied, zero)
+	if !bytes.Equal(applied, validShift) {
+		t.Errorf("Apply(zero) = %x, want generated affine shift %x", applied, validShift)
 	}
 
 	reverted := make([]byte, invertible.StateBytes)
-	ca.Revert(reverted, got)
+	ca.Revert(reverted, applied)
 	if !bytes.Equal(reverted, zero) {
 		t.Errorf("Revert(Apply(zero)) = %x, want zero", reverted)
 	}
@@ -57,22 +59,22 @@ func TestCAInvertibility(t *testing.T) {
 		t.Fatalf("Failed to generate CA: %v", err)
 	}
 
-	src := make([]byte, invertible.StateBytes)
-	intermediate := make([]byte, invertible.StateBytes)
+	initial := make([]byte, invertible.StateBytes)
+	applied := make([]byte, invertible.StateBytes)
 	reverted := make([]byte, invertible.StateBytes)
 
 	for range 10 {
-		rng.Read(src)
+		rng.Read(initial)
 
 		original := make([]byte, invertible.StateBytes)
-		copy(original, src)
+		copy(original, initial)
 
-		ca.Apply(intermediate, src)
-		if bytes.Equal(intermediate, src) {
+		ca.Apply(applied, initial)
+		if bytes.Equal(applied, initial) {
 			t.Errorf("Apply did not change the block (highly unlikely)")
 		}
 
-		ca.Revert(reverted, intermediate)
+		ca.Revert(reverted, applied)
 		if !bytes.Equal(reverted, original) {
 			t.Errorf("Revert failed: original=%v, reverted=%v", original, reverted)
 		}
