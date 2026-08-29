@@ -39,6 +39,35 @@ func TestPermutationGenerateRejectsBiasedByte(t *testing.T) {
 	}
 }
 
+func TestPermutationGatherScatterUsesLocalToGlobalDirection(t *testing.T) {
+	var arena [math.PermutationBytes]byte
+	perm := math.NewPermutation(arena[:])
+
+	for i := range perm.Data {
+		perm.Data[i] = math.Subscript(i)
+	}
+
+	// A 3-cycle, not a swap: pi(0)=2, pi(1)=0, pi(2)=1.
+	perm.Data[0] = 2
+	perm.Data[1] = 0
+	perm.Data[2] = 1
+
+	// Global coordinate 0 occurs at local coordinate 1, since pi(1)=0.
+	input := math.NewBitset(0)
+	got := perm.Gather(&input, 0)
+	want := math.Vector(1 << 1)
+	if got != want {
+		t.Fatalf("Gather = %b, want %b", got, want)
+	}
+
+	// Conversely, local coordinate 1 must scatter to global coordinate 0.
+	var output math.Bitset
+	perm.Scatter(&output, 0, want)
+	if output.Compare(input) != 0 {
+		t.Fatalf("Scatter result differs from expected global coordinate")
+	}
+}
+
 func TestPermutationGeneratePropagatesReaderError(t *testing.T) {
 	var arena [math.PermutationBytes]byte
 	errExpected := errors.New("entropy unavailable")
