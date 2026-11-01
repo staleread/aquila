@@ -1,2 +1,5 @@
-docs/references
-!docs/references/references.bib
+# Copyrighted papers and their text conversions; local reading copies only.
+/references/
+
+# Build outputs
+/article/*.pdf
