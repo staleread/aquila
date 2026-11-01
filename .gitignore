@@ -1,5 +1,5 @@
-# Copyrighted papers and their text conversions; local reading copies only.
-/references/
+# Copyrighted papers: only their Typst text conversions are tracked.
+/references/*.pdf
 
 # Build outputs
 /article/*.pdf

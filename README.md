@@ -18,7 +18,7 @@ permutations and an affine shift.
 | `tools/hypotheses/` | registry checker |
 | `article/` | Typst article, bibliography, abstracts in English and Ukrainian |
 | `hypotheses.yaml` | claims |
-| `references/` | git-ignored local copies of papers |
+| `references/` | Typst conversions of papers; the PDFs are git-ignored |
 
 ```sh
 go test ./...                                 # library and CLI

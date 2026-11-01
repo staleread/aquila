@@ -12,7 +12,7 @@ implementation of Aquila and the article that formalizes and evaluates it.
 - `asym/`, `internal/`: the library. `cmd/aquila/`: the CLI. `tools/hypotheses/`: the registry checker.
 - `article/`: the Typst article (English; the abstract also in Ukrainian, `abstract-uk.typ`).
   `article/references.bib` is the only bibliography.
-- `references/`: git-ignored local copies of papers. Never commit them.
+- `references/`: Typst text conversions of papers (tracked); the PDFs are git-ignored, never commit them.
 - `workdir/`: scratch notes and probes for current investigations. Not authoritative.
 
 ## Hypotheses
