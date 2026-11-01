@@ -14,7 +14,7 @@ func runBuild(configID string) error {
 	}
 
 	tags := fmt.Sprintf("block%d comp%d fold%d deg%d", block, comp, fold, deg)
-	fmt.Printf("Building aquila-cli with tags: %s\n", tags)
+	fmt.Printf("Building aquila with tags: %s\n", tags)
 
 	cmd := exec.Command("go", "build", "-tags", tags)
 	cmd.Stdout = os.Stdout

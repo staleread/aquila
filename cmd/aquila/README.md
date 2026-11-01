@@ -1,7 +1,7 @@
-# aquila-cli
+# aquila
 
 ```
-Usage: aquila-cli <command>
+Usage: aquila <command>
 
 Flags:
   -h, --help    Show context-sensitive help.
