@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	StateSize  = math.BitsetSize
-	StateBytes = math.BitsetBytes
-	RuleBytes  = RuleFoldsBytes + math.PermutationBytes
-	CABytes    = StateBytes + RuleBytes*RulesCount
+	StateSize                  = math.BitsetSize
+	StateBytes                 = math.BitsetBytes
+	RuleBytes                  = RuleFoldsBytes + math.PermutationBytes
+	CABytes                    = StateBytes + RuleBytes*RulesCount
+	maxShiftGenerationAttempts = 10
 )
 
 type State = math.Bitset
@@ -48,10 +49,9 @@ func (ca *CA) Save(dst io.Writer) error {
 }
 
 func (ca *CA) Generate(rnd io.Reader) error {
-	if _, err := io.ReadFull(rnd, ca.arena[:StateBytes]); err != nil {
+	if err := ca.readNonZeroAffineShift(rnd); err != nil {
 		return fmt.Errorf("failed to generate affine shift: %w", err)
 	}
-	ca.shift.Read(ca.arena[:StateBytes])
 
 	for i := range RulesCount {
 		rule := ca.getRule(i)
@@ -61,6 +61,23 @@ func (ca *CA) Generate(rnd io.Reader) error {
 		}
 	}
 	return nil
+}
+
+func (ca *CA) readNonZeroAffineShift(rnd io.Reader) error {
+	shiftArena := ca.arena[:StateBytes]
+
+	for range maxShiftGenerationAttempts {
+		if _, err := io.ReadFull(rnd, shiftArena); err != nil {
+			return err
+		}
+
+		ca.shift.Read(shiftArena)
+		if !ca.shift.IsZero() {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("read zero affine shift %d times", maxShiftGenerationAttempts)
 }
 
 func (ca *CA) Apply(dst, src []byte) {

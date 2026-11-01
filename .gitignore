@@ -1,2 +1,5 @@
-docs/references
-!docs/references/references.bib
+# Copyrighted papers: only their Typst text conversions are tracked.
+/references/*.pdf
+
+# Build outputs
+/article/*.pdf

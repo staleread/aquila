@@ -25,9 +25,8 @@ type Fold struct {
 
 func (r *Rule) Generate(rnd io.Reader) error {
 	perm := r.getPermutation()
-	entropyBuf := r.arena[:math.PermutationBytes-1]
 
-	if err := perm.Generate(rnd, entropyBuf); err != nil {
+	if err := perm.Generate(rnd); err != nil {
 		return err
 	}
 

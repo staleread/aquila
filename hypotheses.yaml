@@ -1,0 +1,36 @@
+# The only claim registry of this repository. Schema and rules: AGENTS.md.
+# Validate with `go run ./tools/hypotheses check [--run]`.
+
+H01:
+  area: research
+  status: open
+  evidence: experiment
+  statement: >-
+    Independent per-Rule coordinate permutations destroy the local fold
+    (triangular) structure of the composed map faster than reusing one
+    coordinate partition for every Rule.
+H02:
+  area: research
+  status: open
+  evidence: experiment
+  statement: >-
+    Increasing the nonlinearity parameter d accelerates the growth of the
+    algebraic degree and of the ANF size of the public map P; beyond some
+    value the gain no longer justifies the growth in computational cost.
+H03:
+  area: model
+  status: proven
+  evidence: derivation
+  ref: article/sections/model.typ#h-p-bijective
+  statement: >-
+    For every key, P is a bijection on F_2^m: each Rule is invertible by
+    restoring folds in ascending order, and P^-1 removes V and applies the
+    Rule inverses in descending order.
+H04:
+  area: model
+  status: proven
+  evidence: derivation
+  ref: article/sections/model.typ#h-p-zero
+  statement: >-
+    The unshifted composition Q is constant-free, so Q(0) = 0 and P(0) = V.
+    Since P is bijective, exactly one input still maps to zero.
